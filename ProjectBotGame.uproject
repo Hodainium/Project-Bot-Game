@@ -1,6 +1,6 @@
 {
 	"FileVersion": 3,
-	"EngineAssociation": "",
+	"EngineAssociation": "{E625D29B-41E1-8055-EEF7-A389094FA448}",
 	"Category": "",
 	"Description": "",
 	"Modules": [
@@ -341,6 +341,10 @@
 		{
 			"Name": "GameplayBehaviors",
 			"Enabled": true
+		},
+		{
+			"Name": "ProjectBot",
+			"Enabled": false
 		}
 	]
 }
