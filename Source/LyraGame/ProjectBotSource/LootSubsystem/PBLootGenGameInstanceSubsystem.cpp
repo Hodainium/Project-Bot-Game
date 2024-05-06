@@ -142,33 +142,37 @@ void UPBLootGenGameInstanceSubsystem::GenerateItemInstanceFromSoftDel(TSoftObjec
 
 					int offsetFromEndIdx = 0;
 
-					do
-					{ 
-						int maxIndex = TotalModData.Num() - 1 - offsetFromEndIdx;
-						int currentIndex = FMath::RandRange(0, maxIndex);
-
-						//Item quality
-						FString OutQualitiesString;
-						TotalModData[currentIndex].GetTagValue(GET_MEMBER_NAME_CHECKED(UPBItemModDefinition, AvailableQualities), OutQualitiesString);
-						FGameplayTagContainer QualityTags;
-						QualityTags.FromExportString(OutQualitiesString);
-
-						if(QualityTags.HasTag(ConvertQualityEnumToTag(RolledModQuality)))
+					if(TotalModData.Num() > 0) //Make sure we found at least one mod. Prevents crash
+					{
+						do
 						{
-							SelectedModIDs.Add(TotalModData[currentIndex].GetPrimaryAssetId());
-							SelectedQualities.Add(RolledModQuality);
-							TotalModData.RemoveAt(currentIndex);
-							bModFound = true;
+							int maxIndex = TotalModData.Num() - 1 - offsetFromEndIdx;
+							int currentIndex = FMath::RandRange(0, maxIndex);
 
-							UE_LOGFMT(LogPBLootSubsystem, Warning, "Mod found!!!");
-						}
-						else
-						{
-							TotalModData.Swap(currentIndex, maxIndex);
+							//Item quality
+							FString OutQualitiesString;
+							TotalModData[currentIndex].GetTagValue(GET_MEMBER_NAME_CHECKED(UPBItemModDefinition, AvailableQualities), OutQualitiesString);
+							FGameplayTagContainer QualityTags;
+							QualityTags.FromExportString(OutQualitiesString);
 
-							offsetFromEndIdx++;
-						}
-					} while (!bModFound && offsetFromEndIdx < TotalModData.Num());
+							if (QualityTags.HasTag(ConvertQualityEnumToTag(RolledModQuality)))
+							{
+								SelectedModIDs.Add(TotalModData[currentIndex].GetPrimaryAssetId());
+								SelectedQualities.Add(RolledModQuality);
+								TotalModData.RemoveAt(currentIndex);
+								bModFound = true;
+
+								UE_LOGFMT(LogPBLootSubsystem, Warning, "Mod found!!!");
+							}
+							else
+							{
+								TotalModData.Swap(currentIndex, maxIndex);
+
+								offsetFromEndIdx++;
+							}
+						} while (!bModFound && offsetFromEndIdx < TotalModData.Num());
+					}
+					
 				}
 
 				TArray<FName> Bundles;
