@@ -343,12 +343,12 @@ void UPBItemSlotComponent::EquipItemInSlot(EPBInventorySlotType SlotType)
 {
 	FPBInventorySlotStruct& Slots = GetSlotStructForEnum(SlotType);
 
-
 	check(Slots.SlotArray.IsValidIndex(Slots.ActiveSlotIndex));
 	//check(Slots.EquippedItem == nullptr);
 
 	if (UPBInventoryItemInstance* SlotItem = Slots.SlotArray[Slots.ActiveSlotIndex])
 	{
+
 		EPBItemType DefItemType = SlotItem->GetItemDefinition()->ItemType;
 
 		switch (DefItemType)
@@ -359,6 +359,8 @@ void UPBItemSlotComponent::EquipItemInSlot(EPBInventorySlotType SlotType)
 			{
 				if (UPBEquipmentManagerComponent* EquipmentManager = FindEquipmentComponent())
 				{
+					UE_LOGFMT(LogPBGame, Warning, "EquipComp is valid");
+
 					//Slots.EquippedItem = EquipmentManager->EquipItem(ItemDef->WeaponDefinition);
 					Slots.EquippedItem = EquipmentManager->EquipItem(ItemDef->WeaponDefinition, SlotItem);
 				}
@@ -423,11 +425,12 @@ void UPBItemSlotComponent::HandleNullEquipmentChange()
 
 UPBEquipmentManagerComponent* UPBItemSlotComponent::FindEquipmentComponent() const
 {
-	/*if (const IHInventoryInterface* InventoryInterface = Cast<IHInventoryInterface>(GetOwner()))
+
+	if (APawn* OwningPawn = Cast<APawn>(GetOwner()))
 	{
-		return InventoryInterface->GetEquipmentComponent();
-	}*/
-	UE_LOGFMT(LogPBGame, Error, "This function is not longer implemented");
+		return OwningPawn->FindComponentByClass<UPBEquipmentManagerComponent>();
+	}
+
 	return nullptr;
 }
 
