@@ -199,16 +199,16 @@ protected:
 	bool IsPendingServerConfirmation;
 
 	UPROPERTY(EditDefaultsOnly, Category = "ItemSlots|Defaults")
-	int WeaponLStartingSlots = 0;
+	int WeaponLStartingSlots = 3;
 
 	UPROPERTY(EditDefaultsOnly, Category = "ItemSlots|Defaults")
-	int WeaponRStartingSlots = 0;
+	int WeaponRStartingSlots = 3;
 
 	UPROPERTY(EditDefaultsOnly, Category = "ItemSlots|Defaults")
-	int TemporaryStartingSlots = 0;
+	int TemporaryStartingSlots = 1;
 
 	UPROPERTY(EditDefaultsOnly, Category = "ItemSlots|Defaults")
-	int ItemStartingSlots = 0;
+	int ItemStartingSlots = 1;
 
 	UPROPERTY(ReplicatedUsing = OnRep_SlotStruct_Weapon_L)
 	FPBInventorySlotStruct SlotStruct_Weapon_L;
