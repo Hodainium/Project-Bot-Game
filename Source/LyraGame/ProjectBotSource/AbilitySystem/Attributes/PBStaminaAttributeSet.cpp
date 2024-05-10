@@ -20,6 +20,7 @@ void UPBStaminaAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty
 UPBStaminaAttributeSet::UPBStaminaAttributeSet()
 	: Stamina(10.f)
 	, MaxStamina(10.f)
+	, StaminaRegenRate(0.f)
 {
 	MaxStaminaBeforeAttributeChange = 0.0f;
 	StaminaBeforeAttributeChange = 0.0f;
