@@ -63,6 +63,7 @@ namespace PB_Cheat_Tags
 {
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_CHEAT_GODMODE, "Cheat.GodMode", "GodMode cheat is active on the owner.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_CHEAT_UNLIMITEDHEALTH, "Cheat.UnlimitedHealth", "UnlimitedHealth cheat is active on the owner.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_CHEAT_UNLIMITEDSTAMINA, "Cheat.UnlimitedStamina", "UnlimitedStamina cheat is active on the owner.");
 }
 
 namespace PB_MovementMode_Tags

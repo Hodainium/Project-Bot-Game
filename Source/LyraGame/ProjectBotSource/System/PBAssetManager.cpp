@@ -70,10 +70,6 @@ void UPBAssetManager::GetAllItemModsMatching(FPBItemSearchQuery& SearchQuery, TA
 		FGameplayTagContainer BlockedTags;
 		BlockedTags.FromExportString(OutBlockedTagsString);
 
-		UE_LOGFMT(LogPBGame, Warning, "Loot sys: searchQuery accum tags: {0}", SearchQuery.AccumulatedTags.ToString());
-		UE_LOGFMT(LogPBGame, Warning, "Loot sys: required tags: {0}", RequiredTags.ToString());
-		UE_LOGFMT(LogPBGame, Warning, "Loot sys: Is matching: {0}", SearchQuery.AccumulatedTags.HasAll(RequiredTags) ? "Yep" : "No");
-
 
 		if(!SearchQuery.AccumulatedTags.HasAll(RequiredTags))
 		{
