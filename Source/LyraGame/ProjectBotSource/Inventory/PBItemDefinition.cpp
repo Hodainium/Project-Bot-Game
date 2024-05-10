@@ -5,6 +5,11 @@
 #include "ProjectBotSource/Logs/PBLogChannels.h"
 #include "ProjectBotSource/System/PBAssetManager.h"
 
+FGameplayTagContainer UPBItemDefinition::GetItemTags()
+{
+	return ItemTags;
+}
+
 FString UPBItemDefinition::GetIdentifierString() const
 {
 	return GetPrimaryAssetId().ToString();

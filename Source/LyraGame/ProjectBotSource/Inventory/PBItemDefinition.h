@@ -72,7 +72,7 @@ public:
 	EPBItemType ItemType;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Item)
-	FGameplayTagContainer FlavorTags;
+	FGameplayTagContainer ItemTags;
 
 	/** User-visible short name */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Item)
@@ -135,6 +135,9 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item|Fragments")
 	TArray<TObjectPtr<UPBInventoryItemFragment>> Fragments;
+
+	UFUNCTION(BlueprintCallable, Category = "Item|Tags")
+	FGameplayTagContainer GetItemTags();
 
 	/** Returns the logical name, equivalent to the primary asset id */
 	UFUNCTION(BlueprintCallable, Category = Item)

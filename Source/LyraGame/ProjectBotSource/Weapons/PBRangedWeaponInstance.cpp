@@ -8,7 +8,7 @@
 #include "Physics/PhysicalMaterialWithTags.h"
 #include "PBWeaponInstance.h"
 
-UE_DEFINE_GAMEPLAY_TAG_STATIC(TAG_PB_Weapon_SteadyAimingCamera, "PB.Weapon.SteadyAimingCamera");
+UE_DEFINE_GAMEPLAY_TAG_STATIC(TAG_PB_Weapon_SteadyAimingCamera, "Lyra.Weapon.SteadyAimingCamera");
 
 UPBRangedWeaponInstance::UPBRangedWeaponInstance(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)

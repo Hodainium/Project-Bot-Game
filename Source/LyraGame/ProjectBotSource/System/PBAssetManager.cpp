@@ -2,6 +2,7 @@
 
 #include "ProjectBotSource/System/PBAssetManager.h"
 #include "AbilitySystemGlobals.h"
+#include "Logging/StructuredLog.h"
 #include "ProjectBotSource/Logs/PBLogChannels.h"
 #include "ProjectBotSource/Modifiers/PBItemModDefinition.h"
 #include "ProjectBotSource/LootSubsystem/PBItemSearchQuery.h"
@@ -43,7 +44,7 @@ void UPBAssetManager::GetAllItemModsMatching(FPBItemSearchQuery& SearchQuery, TA
 		//EPBItemQuality OutQuality;
 		//Asset.GetTagValue("Quality", OutQuality);
 
-
+		bool matchesQuery = true;
 
 		//Asset tags
 		FString OutAssetTagsString;
@@ -69,12 +70,28 @@ void UPBAssetManager::GetAllItemModsMatching(FPBItemSearchQuery& SearchQuery, TA
 		FGameplayTagContainer BlockedTags;
 		BlockedTags.FromExportString(OutBlockedTagsString);
 
+		UE_LOGFMT(LogPBGame, Warning, "Loot sys: searchQuery accum tags: {0}", SearchQuery.AccumulatedTags.ToString());
+		UE_LOGFMT(LogPBGame, Warning, "Loot sys: required tags: {0}", RequiredTags.ToString());
+		UE_LOGFMT(LogPBGame, Warning, "Loot sys: Is matching: {0}", SearchQuery.AccumulatedTags.HasAll(RequiredTags) ? "Yep" : "No");
+
+
+		if(!SearchQuery.AccumulatedTags.HasAll(RequiredTags))
+		{
+			matchesQuery = false;
+		}
+
+
+		if(matchesQuery)
+		{
+			OutAssets.Add(Asset);
+		}
+
 		/*if (AllowedTags.HasTag(WeaponTag))
 		{
 			OutAssets.Add(Asset);
 		}*/
 
-		OutAssets.Add(Asset);
+		
 	}
 }
 

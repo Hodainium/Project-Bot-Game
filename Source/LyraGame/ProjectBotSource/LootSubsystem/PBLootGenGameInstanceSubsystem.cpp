@@ -117,6 +117,9 @@ void UPBLootGenGameInstanceSubsystem::GenerateItemInstanceFromSoftDel(TSoftObjec
 				TArray<FAssetData> TotalModData;
 
 				FPBItemSearchQuery Query = FPBItemSearchQuery();
+
+				Query.AccumulatedTags.AppendTags(ItemDef->GetItemTags());
+				
 				//Query.BlockedModQualities = GetBlockedItemQualitiesForRange(EPBItemQuality::Quality0, ItemInstance->GetItemQuality());
 				UPBAssetManager::Get().GetAllItemModsMatching(Query, TotalModData);
 
