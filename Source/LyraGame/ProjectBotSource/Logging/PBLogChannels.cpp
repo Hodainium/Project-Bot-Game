@@ -4,3 +4,5 @@
 #include "ProjectBotSource/Logs/PBLogChannels.h"
 
 DEFINE_LOG_CATEGORY(LogPBGame);
+DEFINE_LOG_CATEGORY(LogPBAbilitySystem);
+DEFINE_LOG_CATEGORY(LogPBTeams);
