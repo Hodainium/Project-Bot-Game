@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "PBModifiedWeaponInstance.h"
 #include "Curves/CurveFloat.h"
 
 #include "PBWeaponInstance.h"
@@ -12,12 +13,12 @@
 class UPhysicalMaterial;
 
 /**
- * ULyraRangedWeaponInstance
+ * UPBRangedWeaponInstance
  *
- * A piece of equipment representing a ranged weapon spawned and applied to a pawn
+ * A piece of equipment representing a ranged weapon spawned and applied to a pawn. With modifiers enabled
  */
 UCLASS()
-class UPBRangedWeaponInstance : public UPBWeaponInstance, public ILyraAbilitySourceInterface
+class UPBRangedWeaponInstance : public UPBModifiedWeaponInstance, public ILyraAbilitySourceInterface
 {
 	GENERATED_BODY()
 
