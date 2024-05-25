@@ -75,6 +75,7 @@ UPBGameplayAbility_RangedWeapon::UPBGameplayAbility_RangedWeapon(const FObjectIn
 	: Super(ObjectInitializer)
 {
 	SourceBlockedTags.AddTag(TAG_PB_WeaponFireBlocked);
+	TargettingSource = EPBAbilityTargetingSource::CameraTowardsFocus;
 }
 
 UPBRangedWeaponInstance* UPBGameplayAbility_RangedWeapon::GetWeaponInstance() const
@@ -362,7 +363,7 @@ void UPBGameplayAbility_RangedWeapon::PerformLocalTargeting(OUT TArray<FHitResul
 		InputData.bCanPlayBulletFX = (AvatarPawn->GetNetMode() != NM_DedicatedServer);
 
 		//@TODO: Should do more complicated logic here when the player is close to a wall, etc...
-		const FTransform TargetTransform = GetTargetingTransform(AvatarPawn, EPBAbilityTargetingSource::CameraTowardsFocus);
+		const FTransform TargetTransform = GetTargetingTransform(AvatarPawn, TargettingSource);
 		InputData.AimDir = TargetTransform.GetUnitAxis(EAxis::X);
 		InputData.StartTrace = TargetTransform.GetTranslation();
 
