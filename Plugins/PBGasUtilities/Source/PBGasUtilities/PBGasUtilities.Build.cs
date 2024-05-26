@@ -33,7 +33,8 @@ public class PBGasUtilities : ModuleRules
 				"NavigationSystem",
 				"GameplayAbilities",
 				"GameplayTags",
-				"GameplayTasks", "TargetingSystem",
+				"GameplayTasks", 
+				"TargetingSystem",
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);
