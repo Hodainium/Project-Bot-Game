@@ -43,7 +43,7 @@ protected:
 	virtual void OnDeathFinished(AActor* OwningActor);
 
 	// Called when the death sequence for the character has completed
-	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnStartFinished"))
+	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnDeathStarted"))
 	void K2_OnDeathStarted();
 
 	// Called when the death sequence for the character has completed
