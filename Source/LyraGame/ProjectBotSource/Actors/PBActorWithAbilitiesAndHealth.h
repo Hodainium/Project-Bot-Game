@@ -11,6 +11,7 @@
 #include "ProjectBotSource/LockOnSystem/LockOnSystemTargetableInterface.h"
 #include "PBActorWithAbilitiesAndHealth.generated.h"
 
+class ULockOnSystemTargetComponent;
 class ULyraCombatSet;
 class ULyraHealthSet;
 class ULyraAbilitySet;
@@ -18,15 +19,13 @@ class ULyraAbilitySystemComponent;
 class ULyraHealthComponent;
 
 UCLASS(Blueprintable)
-class LYRAGAME_API APBActorWithAbilitiesAndHealth : public APBActorWithAbilities, public ILockOnSystemTargetableInterface
+class LYRAGAME_API APBActorWithAbilitiesAndHealth : public APBActorWithAbilities
 {
 	GENERATED_BODY()
 
 public:
 	// Set Class Defaults
 	APBActorWithAbilitiesAndHealth(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
-
-	bool IsTargetable_Implementation() const override;
 
 protected:
 	//~APBActorWithAbilities implementation
@@ -72,7 +71,7 @@ protected:
 	 *
 	 * Override as needed.
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "PB|Ability")
+	UPROPERTY(BlueprintReadOnly, Category = "PB|Ability")
 	TObjectPtr<ULyraCombatSet> CombatSet;
 
 	/**
@@ -83,7 +82,7 @@ protected:
 	 * You probably want to derive your own class from this to add your custom
 	 * attributes to this one.
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "PB|Ability")
+	UPROPERTY(BlueprintReadOnly, Category = "PB|Ability")
 	TObjectPtr<ULyraHealthSet> HealthSet;
 
 	/**
@@ -95,7 +94,10 @@ protected:
 	 * This component also seems to be what is responsible for handling the
 	 * death of an Actor via network replication.
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "PB|Ability")
+	UPROPERTY(BlueprintReadOnly, Category = "PB|Ability")
 	TObjectPtr<ULyraHealthComponent> HealthComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "PB|LockOn", Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<ULockOnSystemTargetComponent> TargetComponent;
 
 };

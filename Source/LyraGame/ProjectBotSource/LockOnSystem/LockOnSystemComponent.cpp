@@ -4,6 +4,7 @@
 #include "EngineUtils.h"
 #include "TargetSystemLog.h"
 #include "LockOnSystemTargetableInterface.h"
+#include "LockOnSystemTargetComponent.h"
 #include "TimerManager.h"
 #include "Camera/CameraComponent.h"
 #include "Components/WidgetComponent.h"
@@ -21,7 +22,6 @@ ULockOnSystemComponent::ULockOnSystemComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
 
-	LockedOnWidgetClass = nullptr; //StaticLoadClass(UObject::StaticClass(), nullptr, TEXT("/TargetSystem/UI/WBP_LockOn.WBP_LockOn_C"));
 	TargetableActors = APawn::StaticClass();
 	TargetableCollisionChannel = ECollisionChannel::ECC_Pawn;
 }
@@ -338,9 +338,14 @@ void ULockOnSystemComponent::TargetLockOn(AActor* TargetToLockOn)
 				
 				CachedIndicator = nullptr;
 
+				ULockOnSystemTargetComponent* TargetComp = TargetToLockOn->GetComponentByClass<ULockOnSystemTargetComponent>();
+
 				UIndicatorDescriptor* Indicator = NewObject<UIndicatorDescriptor>();
 				Indicator->SetDataObject(TargetToLockOn);
 				Indicator->SetSceneComponent(TargetToLockOn->GetRootComponent());
+				/*Indicator->SetSceneComponent(TargetToLockOn->FindComponentByClass<UMeshComponent>());
+				Indicator->SetComponentSocketName(TargetComp->GetSocketName());*/
+				Indicator->SetWorldPositionOffset(TargetComp->GetTargetOffset());
 				Indicator->SetIndicatorClass(IndicatorWidgetClass);
 				IndicatorManager->AddIndicator(Indicator);
 				CachedIndicator = Indicator;
@@ -410,34 +415,6 @@ void ULockOnSystemComponent::TargetLockOff()
 	LockedOnTargetActor = nullptr;
 }
 
-void ULockOnSystemComponent::CreateAndAttachTargetLockedOnWidgetComponent(AActor* TargetActor)
-{
-	if (!LockedOnWidgetClass)
-	{
-		TS_LOG(Error, TEXT("TargetSystemComponent: Cannot get LockedOnWidgetClass, please ensure it is a valid reference in the Component Properties."));
-		return;
-	}
-
-	TargetLockedOnWidgetComponent = NewObject<UWidgetComponent>(TargetActor, MakeUniqueObjectName(TargetActor, UWidgetComponent::StaticClass(), FName("TargetLockOn")));
-	TargetLockedOnWidgetComponent->SetWidgetClass(LockedOnWidgetClass);
-
-	UMeshComponent* MeshComponent = TargetActor->FindComponentByClass<UMeshComponent>();
-	USceneComponent* ParentComponent = MeshComponent && LockedOnWidgetParentSocket != NAME_None ? MeshComponent : TargetActor->GetRootComponent();
-
-	if (IsValid(OwnerPlayerController))
-	{
-		TargetLockedOnWidgetComponent->SetOwnerPlayer(OwnerPlayerController->GetLocalPlayer());
-	}
-
-	TargetLockedOnWidgetComponent->ComponentTags.Add(FName("TargetSystem.LockOnWidget"));
-	TargetLockedOnWidgetComponent->SetWidgetSpace(EWidgetSpace::Screen);
-	TargetLockedOnWidgetComponent->SetupAttachment(ParentComponent, LockedOnWidgetParentSocket);
-	TargetLockedOnWidgetComponent->SetRelativeLocation(LockedOnWidgetRelativeLocation);
-	TargetLockedOnWidgetComponent->SetDrawSize(FVector2D(LockedOnWidgetDrawSize, LockedOnWidgetDrawSize));
-	TargetLockedOnWidgetComponent->SetVisibility(true);
-	TargetLockedOnWidgetComponent->RegisterComponent();
-}
-
 TArray<AActor*> ULockOnSystemComponent::GetAllActorsOfClass(const TSubclassOf<AActor> ActorClass) const
 {
 	TArray<AActor*> Actors;
@@ -456,13 +433,20 @@ TArray<AActor*> ULockOnSystemComponent::GetAllActorsOfClass(const TSubclassOf<AA
 
 bool ULockOnSystemComponent::TargetIsTargetable(const AActor* Actor)
 {
-	const bool bIsImplemented = Actor->GetClass()->ImplementsInterface(ULockOnSystemTargetableInterface::StaticClass());
+	if(ULockOnSystemTargetComponent* Target = Actor->FindComponentByClass<ULockOnSystemTargetComponent>())
+	{
+		return Target->GetIsTargetable();
+	}
+
+	return false;
+
+	/*const bool bIsImplemented = Actor->GetClass()->ImplementsInterface(ULockOnSystemTargetableInterface::StaticClass());
 	if (bIsImplemented)
 	{
 		return ILockOnSystemTargetableInterface::Execute_IsTargetable(Actor);
 	}
 
-	return false;
+	return false;*/
 }
 
 void ULockOnSystemComponent::SetupLocalPlayerController()
@@ -556,7 +540,7 @@ bool ULockOnSystemComponent::LineTrace(FHitResult& OutHitResult, const AActor* O
 		return World->LineTraceSingleByChannel(
 			OutHitResult,
 			OwnerActor->GetActorLocation(),
-			OtherActor->GetActorLocation(),
+			GetTargetActorLocation(OtherActor),
 			TargetableCollisionChannel,
 			Params
 		);
@@ -577,7 +561,7 @@ FRotator ULockOnSystemComponent::GetControlRotationOnTarget(const AActor* OtherA
 	const FRotator ControlRotation = OwnerPlayerController->GetControlRotation();
 
 	const FVector CharacterLocation = OwnerActor->GetActorLocation();
-	const FVector OtherActorLocation = OtherActor->GetActorLocation();
+	const FVector OtherActorLocation = GetTargetActorLocation(OtherActor);
 
 	// Find look at rotation
 	const FRotator LookRotation = FRotationMatrix::MakeFromX(OtherActorLocation - CharacterLocation).Rotator();
@@ -627,7 +611,18 @@ void ULockOnSystemComponent::SetControlRotationOnTarget(AActor* TargetActor) con
 
 float ULockOnSystemComponent::GetDistanceFromCharacter(const AActor* OtherActor) const
 {
-	return OwnerActor->GetDistanceTo(OtherActor);
+	//return OwnerActor->GetDistanceTo(OtherActor);
+
+	ULockOnSystemTargetComponent* Target = OtherActor->GetComponentByClass<ULockOnSystemTargetComponent>();
+
+	return Target ? (OwnerActor->GetActorLocation() - Target->GetTargetLocation()).Size() : OwnerActor->GetDistanceTo(OtherActor);
+}
+
+FVector ULockOnSystemComponent::GetTargetActorLocation(const AActor* OtherActor) const
+{
+	ULockOnSystemTargetComponent* Target = OtherActor->GetComponentByClass<ULockOnSystemTargetComponent>();
+
+	return Target ? Target->GetTargetLocation() : OtherActor->GetActorLocation();
 }
 
 bool ULockOnSystemComponent::ShouldBreakLineOfSight() const

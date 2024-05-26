@@ -10,6 +10,7 @@
 #include "AbilitySystem/Attributes/LyraCombatSet.h"
 #include "Character/LyraHealthComponent.h"
 #include "Logging/StructuredLog.h"
+#include "ProjectBotSource/LockOnSystem/LockOnSystemTargetComponent.h"
 
 
 APBActorWithAbilitiesAndHealth::APBActorWithAbilitiesAndHealth(const FObjectInitializer& ObjectInitializer)
@@ -18,16 +19,12 @@ APBActorWithAbilitiesAndHealth::APBActorWithAbilitiesAndHealth(const FObjectInit
 	CombatSet = CreateDefaultSubobject<ULyraCombatSet>("CombatSet");
 	HealthSet = CreateDefaultSubobject<ULyraHealthSet>("HealthSet");
 
+	TargetComponent = CreateDefaultSubobject<ULockOnSystemTargetComponent>("TargetComponent");
+
 	HealthComponent = CreateDefaultSubobject<ULyraHealthComponent>("HealthComponent");
-	HealthComponent->OnDeathStarted.AddDynamic(this, &ThisClass::OnDeathStarted);
-	HealthComponent->OnDeathFinished.AddDynamic(this, &ThisClass::OnDeathFinished);
+	
 
 	IsTargetable = false;
-}
-
-bool APBActorWithAbilitiesAndHealth::IsTargetable_Implementation() const
-{
-	return IsTargetable;
 }
 
 
@@ -45,6 +42,9 @@ void APBActorWithAbilitiesAndHealth::InitializeAbilitySystem()
 
 	// DO NOT init HealthComponent until AFTER HealthSet has been added
 	HealthComponent->InitializeWithAbilitySystem(ASC);
+
+	HealthComponent->OnDeathStarted.AddDynamic(this, &ThisClass::OnDeathStarted);
+	HealthComponent->OnDeathFinished.AddDynamic(this, &ThisClass::OnDeathFinished);
 }
 
 

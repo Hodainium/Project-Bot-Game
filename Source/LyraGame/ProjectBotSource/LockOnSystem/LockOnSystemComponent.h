@@ -70,11 +70,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Target System|Widget")
 	bool bShouldDrawLockedOnWidget = true;
 
-	// The Widget Class to use when locked on Target. If not defined, will fallback to a Text-rendered
-	// widget with a single O character.
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Target System|Widget")
-	TSubclassOf<UUserWidget> LockedOnWidgetClass;
-
 	// The Widget Draw Size for the Widget class to use when locked on Target.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Target System|Widget")
 	float LockedOnWidgetDrawSize = 32.0f;
@@ -222,6 +217,8 @@ private:
 
 	float GetDistanceFromCharacter(const AActor* OtherActor) const;
 
+	FVector GetTargetActorLocation(const AActor* OtherActor) const;
+
 
 	//~ Actor rotation
 
@@ -233,10 +230,6 @@ private:
 	float GetAngleUsingCharacterRotation(const AActor* ActorToLook) const;
 
 	static FRotator FindLookAtRotation(const FVector Start, const FVector Target);
-
-	//~ Widget
-
-	void CreateAndAttachTargetLockedOnWidgetComponent(AActor* TargetActor);
 
 	//~ Targeting
 
