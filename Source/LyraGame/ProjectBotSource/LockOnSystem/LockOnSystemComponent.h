@@ -12,6 +12,7 @@
 //#endif
 #include "LockOnSystemComponent.generated.h"
 
+class UIndicatorDescriptor;
 class UUserWidget;
 class UWidgetComponent;
 class APlayerController;
@@ -253,6 +254,12 @@ private:
 	 void SetupLocalPlayerController();
 
 protected:
+	UPROPERTY()
+	TObjectPtr<UIndicatorDescriptor> CachedIndicator;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSoftClassPtr<UUserWidget> IndicatorWidgetClass;
+
 	// Called when the game starts
 	virtual void BeginPlay() override;
 

@@ -12,6 +12,9 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Pawn.h"
 #include "GameFramework/PlayerController.h"
+#include "Player/LyraPlayerController.h"
+#include "UI/IndicatorSystem/IndicatorDescriptor.h"
+#include "UI/IndicatorSystem/LyraIndicatorManagerComponent.h"
 
 // Sets default values for this component's properties
 ULockOnSystemComponent::ULockOnSystemComponent()
@@ -325,7 +328,29 @@ void ULockOnSystemComponent::TargetLockOn(AActor* TargetToLockOn)
 	bTargetLocked = true;
 	if (bShouldDrawLockedOnWidget)
 	{
-		CreateAndAttachTargetLockedOnWidgetComponent(TargetToLockOn);
+		//CreateAndAttachTargetLockedOnWidgetComponent(TargetToLockOn);
+
+		if (OwnerPlayerController)
+		{
+			if (ULyraIndicatorManagerComponent* IndicatorManager = ULyraIndicatorManagerComponent::GetComponent(OwnerPlayerController))
+			{
+				IndicatorManager->RemoveIndicator(CachedIndicator);
+				
+				CachedIndicator = nullptr;
+
+				UIndicatorDescriptor* Indicator = NewObject<UIndicatorDescriptor>();
+				Indicator->SetDataObject(TargetToLockOn);
+				Indicator->SetSceneComponent(TargetToLockOn->GetRootComponent());
+				Indicator->SetIndicatorClass(IndicatorWidgetClass);
+				IndicatorManager->AddIndicator(Indicator);
+				CachedIndicator = Indicator;
+				
+			}
+			else
+			{
+				//TODO This should probably be a noisy warning.  Why are we updating widgets on a PC that can never do anything with them?
+			}
+		}
 	}
 
 	if (bShouldControlRotation)
@@ -353,9 +378,15 @@ void ULockOnSystemComponent::TargetLockOff()
 	SetupLocalPlayerController();
 
 	bTargetLocked = false;
-	if (TargetLockedOnWidgetComponent)
+	if (CachedIndicator && OwnerPlayerController)
 	{
-		TargetLockedOnWidgetComponent->DestroyComponent();
+		//TargetLockedOnWidgetComponent->DestroyComponent();
+		if (ULyraIndicatorManagerComponent* IndicatorManager = ULyraIndicatorManagerComponent::GetComponent(OwnerPlayerController))
+		{
+			IndicatorManager->RemoveIndicator(CachedIndicator);
+		}
+		
+		CachedIndicator = nullptr;
 	}
 
 	if (LockedOnTargetActor)
@@ -431,7 +462,7 @@ bool ULockOnSystemComponent::TargetIsTargetable(const AActor* Actor)
 		return ILockOnSystemTargetableInterface::Execute_IsTargetable(Actor);
 	}
 
-	return true;
+	return false;
 }
 
 void ULockOnSystemComponent::SetupLocalPlayerController()
