@@ -186,7 +186,7 @@ void UPBLootGenGameInstanceSubsystem::GenerateItemInstanceFromSoftDel(TSoftObjec
 					{
 						if (UPBItemModDefinition* ModDef = Cast<UPBItemModDefinition>(UPBAssetManager::Get().GetPrimaryAssetObject(SelectedModIDs[i])))
 						{
-							UPBItemModInstance* ModInstance = NewObject<UPBItemModInstance>(WeaponInstance);  //@TODO: Using the actor instead of component as the outer due to UE-127172
+							UPBItemModInstance* ModInstance = NewObject<UPBItemModInstance>(WeaponInstance->GetOuter()); //WeaponInstance  //@TODO: Using the actor instead of component as the outer due to UE-127172
 							ModInstance->SetModDefinition(ModDef);
 							ModInstance->SetModQuality(SelectedQualities[i]);
 

@@ -18,6 +18,9 @@ class LYRAGAME_API UPBItemModInstance : public UObject
 public:
 	UPBItemModInstance();
 
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	virtual bool IsSupportedForNetworking() const override { return true; }
+
 	UFUNCTION(BlueprintCallable)
 	UPBItemModDefinition* GetModDefinition() const;
 
@@ -47,13 +50,13 @@ protected:
 	void SetModQuality(EPBItemQuality InQuality);
 
 	/** ItemMod definition. The static data that this instance points to. */
-	UPROPERTY()
+	UPROPERTY(Replicated)
 	TObjectPtr<UPBItemModDefinition> ModDef;
 
-	UPROPERTY()
+	UPROPERTY(Replicated)
 	float LevelOffset;
 
-	UPROPERTY()
+	UPROPERTY(Replicated)
 	EPBItemQuality ModQuality;
 
 	//void RemoveFromWeaponInstance(UPBModifiedWeaponInstance* EquipmentInstance, FPBItemModDef_GrantedHandles* GrantedHandles);

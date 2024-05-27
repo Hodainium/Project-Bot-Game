@@ -22,9 +22,6 @@ APBActorWithAbilitiesAndHealth::APBActorWithAbilitiesAndHealth(const FObjectInit
 	TargetComponent = CreateDefaultSubobject<ULockOnSystemTargetComponent>("TargetComponent");
 
 	HealthComponent = CreateDefaultSubobject<ULyraHealthComponent>("HealthComponent");
-	
-
-	IsTargetable = false;
 }
 
 
@@ -43,8 +40,8 @@ void APBActorWithAbilitiesAndHealth::InitializeAbilitySystem()
 	// DO NOT init HealthComponent until AFTER HealthSet has been added
 	HealthComponent->InitializeWithAbilitySystem(ASC);
 
-	HealthComponent->OnDeathStarted.AddDynamic(this, &ThisClass::OnDeathStarted);
-	HealthComponent->OnDeathFinished.AddDynamic(this, &ThisClass::OnDeathFinished);
+	HealthComponent->OnDeathStarted.AddUniqueDynamic(this, &ThisClass::OnDeathStarted);
+	HealthComponent->OnDeathFinished.AddUniqueDynamic(this, &ThisClass::OnDeathFinished);
 }
 
 
@@ -63,7 +60,7 @@ void APBActorWithAbilitiesAndHealth::UninitializeAbilitySystem()
 
 void APBActorWithAbilitiesAndHealth::OnDeathStarted(AActor* OwningActor)
 {
-	IsTargetable = false;
+	TargetComponent->SetIsTargetable(false);
 	K2_OnDeathStarted();
 }
 

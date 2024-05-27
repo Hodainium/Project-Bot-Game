@@ -13,9 +13,27 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Pawn.h"
 #include "GameFramework/PlayerController.h"
+#include "Logging/StructuredLog.h"
 #include "Player/LyraPlayerController.h"
 #include "UI/IndicatorSystem/IndicatorDescriptor.h"
 #include "UI/IndicatorSystem/LyraIndicatorManagerComponent.h"
+
+namespace PBConsoleVariables
+{
+	static float DrawTargetDuration = 0.0f;
+	static FAutoConsoleVariableRef CVarDrawTargetDuration(
+		TEXT("pb.LockOn.DrawTargetDuration"),
+		DrawTargetDuration,
+		TEXT("Should we do debug drawing for locked on target transform (if above zero, sets how long (in seconds))"),
+		ECVF_Default);
+
+	static float DrawTargetRadius = 3.0f;
+	static FAutoConsoleVariableRef CVarDrawTargetRadius(
+		TEXT("pb.LockOn.DrawTargetRadius"),
+		DrawTargetRadius,
+		TEXT("When locked on debug drawing is enabled (see DrawTargetDuration), how big should the hit radius be? (in uu)"),
+		ECVF_Default);
+}
 
 // Sets default values for this component's properties
 ULockOnSystemComponent::ULockOnSystemComponent()
@@ -50,6 +68,11 @@ void ULockOnSystemComponent::BeginPlay()
 void ULockOnSystemComponent::TickComponent(const float DeltaTime, const ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	if(OwnerPawn->IsLocallyControlled())
+	{
+		
+	}
 
 	if (!bTargetLocked || !LockedOnTargetActor)
 	{
@@ -560,12 +583,19 @@ FRotator ULockOnSystemComponent::GetControlRotationOnTarget(const AActor* OtherA
 
 	const FRotator ControlRotation = OwnerPlayerController->GetControlRotation();
 
+	FVector CamLoc;
+	FRotator CamRot;
+	OwnerPlayerController->GetPlayerViewPoint(/*out*/ CamLoc, /*out*/ CamRot);
+
+
 	const FVector CharacterLocation = OwnerActor->GetActorLocation();
 	const FVector OtherActorLocation = GetTargetActorLocation(OtherActor);
 
 	// Find look at rotation
-	const FRotator LookRotation = FRotationMatrix::MakeFromX(OtherActorLocation - CharacterLocation).Rotator();
-	float Pitch = LookRotation.Pitch;
+	const FRotator LookRotation = FRotationMatrix::MakeFromX(OtherActorLocation - CharacterLocation).Rotator(); //  
+	const FRotator LookRotationFromCam = FRotationMatrix::MakeFromX(OtherActorLocation - CamLoc).Rotator();
+	//float Pitch = LookRotation.Pitch;
+	float Pitch = LookRotationFromCam.Pitch;
 	FRotator TargetRotation;
 	if (bAdjustPitchBasedOnDistanceToTarget)
 	{
@@ -588,7 +618,7 @@ FRotator ULockOnSystemComponent::GetControlRotationOnTarget(const AActor* OtherA
 		}
 	}
 
-	return FMath::RInterpTo(ControlRotation, TargetRotation, GetWorld()->GetDeltaSeconds(), 9.0f);
+	return FMath::RInterpTo(ControlRotation, TargetRotation, GetWorld()->GetDeltaSeconds(), InterpSpeed);
 }
 
 void ULockOnSystemComponent::SetControlRotationOnTarget(AActor* TargetActor) const
@@ -621,6 +651,13 @@ float ULockOnSystemComponent::GetDistanceFromCharacter(const AActor* OtherActor)
 FVector ULockOnSystemComponent::GetTargetActorLocation(const AActor* OtherActor) const
 {
 	ULockOnSystemTargetComponent* Target = OtherActor->GetComponentByClass<ULockOnSystemTargetComponent>();
+
+#if ENABLE_DRAW_DEBUG
+	if (PBConsoleVariables::DrawTargetDuration > 0.0f)
+	{
+		DrawDebugPoint(GetWorld(), Target ? Target->GetTargetLocation() : OtherActor->GetActorLocation(), PBConsoleVariables::DrawTargetRadius, FColor::Red, false, PBConsoleVariables::DrawTargetDuration, 255);
+	}
+#endif
 
 	return Target ? Target->GetTargetLocation() : OtherActor->GetActorLocation();
 }

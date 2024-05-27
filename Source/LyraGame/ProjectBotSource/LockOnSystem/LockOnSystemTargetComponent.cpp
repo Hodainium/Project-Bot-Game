@@ -28,10 +28,10 @@ FVector ULockOnSystemTargetComponent::GetTargetLocation()
 	{
 		if (UMeshComponent* Mesh = Owner->FindComponentByClass<UMeshComponent>())
 		{
-			return Mesh->GetSocketLocation(LockedOnParentSocket);
+			return Mesh->GetSocketLocation(LockedOnParentSocket) + LockedOnLocationOffset;
 		}
 
-		return Owner->GetActorLocation();
+		return Owner->GetActorLocation() + LockedOnLocationOffset;
 	}
 
 	return FVector::Zero();

@@ -48,6 +48,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Target System")
 	bool bShouldControlRotation = true;
 
+
+	// The speed that we interp to the target position
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Target System")
+	float InterpSpeed = 9.0f;
+
 	// Whether to accept pitch input when bAdjustPitchBasedOnDistanceToTarget is disabled
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Target System")
 	bool bIgnoreLookInput = true;
@@ -69,23 +74,6 @@ public:
 	// OnTargetLockedOn and OnTargetLockedOff events can be used for this.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Target System|Widget")
 	bool bShouldDrawLockedOnWidget = true;
-
-	// The Widget Draw Size for the Widget class to use when locked on Target.
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Target System|Widget")
-	float LockedOnWidgetDrawSize = 32.0f;
-
-	// The Socket name to attach the LockedOn Widget.
-	//
-	// You should use this to configure the Bone or Socket name the widget should be attached to, and allow
-	// the widget to move with target character's animation (Ex: spine_03)
-	//
-	// Set it to None to attach the Widget Component to the Root Component instead of the Mesh.
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Target System|Widget")
-	FName LockedOnWidgetParentSocket = FName("spine_03");
-
-	// The Relative Location to apply on Target LockedOn Widget when attached to a target.
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Target System|Widget")
-	FVector LockedOnWidgetRelativeLocation = FVector(0.0f, 0.0f, 0.0f);
 
 	// Setting this to true will tell the Target System to adjust the Pitch Offset (the Y axis) when locked on,
 	// depending on the distance to the target actor.
@@ -129,6 +117,9 @@ public:
 	// Only used when Sticky Target is enabled.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Target System|Sticky Feeling on Target Switch")
 	float StickyRotationThreshold = 30.0f;
+
+	//UFUNCTION(Server, Reliable, BlueprintCallable, Category = "Slots")
+	//void Server_( ); 
 
 	// Function to call to target a new actor.
 	UFUNCTION(BlueprintCallable, Category = "Target System")

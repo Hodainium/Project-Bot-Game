@@ -49,15 +49,6 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnDeathFinished"))
 	void K2_OnDeathFinished();
 
-	UPROPERTY(EditDefaultsOnly)
-	bool IsTargetable;
-
-public:
-	// Public Static Component Names
-	static const FName CombatSetName;
-	static const FName HealthComponentName;
-	static const FName HealthSetName;
-
 protected:
 	/**
 	 * Lyra "Combat Set" is required by Lyra Healing & Damage Effect Calculations.

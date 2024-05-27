@@ -5,12 +5,22 @@
 #include "ProjectBotSource/Logs/PBLogChannels.h"
 #include "ProjectBotSource/Inventory/PBInventoryEnums.h"
 #include "Logging/StructuredLog.h"
+#include "Net/UnrealNetwork.h"
 #include "ProjectBotSource/Modifiers/PBItemModDefinition.h"
 
 UPBItemModInstance::UPBItemModInstance() 
 {
 	ModQuality = EPBItemQuality::Quality0;
 	LevelOffset = 0;
+}
+
+void UPBItemModInstance::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	UObject::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ThisClass, ModDef);
+	DOREPLIFETIME(ThisClass, LevelOffset);
+	DOREPLIFETIME(ThisClass, ModQuality);
 }
 
 UPBItemModDefinition* UPBItemModInstance::GetModDefinition() const

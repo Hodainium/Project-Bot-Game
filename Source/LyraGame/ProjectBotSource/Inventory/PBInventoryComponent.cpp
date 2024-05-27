@@ -8,6 +8,7 @@
 #include "ProjectBotSource/Inventory/PBItemDefinition.h"
 #include "ProjectBotSource/Inventory/PBItemInstance.h"
 #include "Net/UnrealNetwork.h"
+#include "ProjectBotSource/Modifiers/PBItemModInstance.h"
 
 UE_DEFINE_GAMEPLAY_TAG(TAG_Inventory_Message_StackChanged, "Inventory.Message.StackChanged");
 //UE_DEFINE_GAMEPLAY_TAG(TAG_Inventory_Item_Count, "ItemStatTags.Inventory.Item.Count");
@@ -208,6 +209,10 @@ void UPBInventoryComponent::AddItemInstance(UPBInventoryItemInstance* ItemInstan
 	if (IsUsingRegisteredSubObjectList() && IsReadyForReplication() && ItemInstance)
 	{
 		AddReplicatedSubObject(ItemInstance);
+		for (UPBItemModInstance* Mod : ItemInstance->GetItemMods())
+		{
+			AddReplicatedSubObject(Mod);
+		}
 	}
 }
 
@@ -224,6 +229,10 @@ void UPBInventoryComponent::RemoveItemInstance(UPBInventoryItemInstance* ItemIns
 
 	if (ItemInstance && IsUsingRegisteredSubObjectList())
 	{
+		for (UPBItemModInstance* Mod : ItemInstance->GetItemMods())
+		{
+			RemoveReplicatedSubObject(Mod);
+		}
 		RemoveReplicatedSubObject(ItemInstance);
 	}
 }
