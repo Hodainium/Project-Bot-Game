@@ -238,6 +238,26 @@ bool ULockOnSystemComponent::IsLocked() const
 	return bTargetLocked && LockedOnTargetActor;
 }
 
+void ULockOnSystemComponent::SetOwnerPawnLockOnState(bool State)
+{
+	if (bShouldControlRotation)
+	{
+		ControlRotation(State);
+	}
+
+	if (IsValid(OwnerPlayerController))
+	{
+		if(State && (bAdjustPitchBasedOnDistanceToTarget || bIgnoreLookInput))
+		{
+			OwnerPlayerController->SetIgnoreLookInput(true);
+		}
+		else
+		{
+			OwnerPlayerController->ResetIgnoreLookInput();
+		}
+	}
+}
+
 TArray<AActor*> ULockOnSystemComponent::FindTargetsInRange(TArray<AActor*> ActorsToLook, const float RangeMin, const float RangeMax) const
 {
 	TArray<AActor*> ActorsInRange;
@@ -381,18 +401,7 @@ void ULockOnSystemComponent::TargetLockOn(AActor* TargetToLockOn)
 		}
 	}
 
-	if (bShouldControlRotation)
-	{
-		ControlRotation(true);
-	}
-
-	if (bAdjustPitchBasedOnDistanceToTarget || bIgnoreLookInput)
-	{
-		if (IsValid(OwnerPlayerController))
-		{
-			OwnerPlayerController->SetIgnoreLookInput(true);
-		}
-	}
+	//SetOwnerPawnLockOnState(true);
 
 	if (OnTargetLockedOn.IsBound())
 	{
@@ -419,15 +428,7 @@ void ULockOnSystemComponent::TargetLockOff()
 
 	if (LockedOnTargetActor)
 	{
-		if (bShouldControlRotation)
-		{
-			ControlRotation(false);
-		}
-
-		if (IsValid(OwnerPlayerController))
-		{
-			OwnerPlayerController->ResetIgnoreLookInput();
-		}
+		//SetOwnerPawnLockOnState(false);
 
 		if (OnTargetLockedOff.IsBound())
 		{

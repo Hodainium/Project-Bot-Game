@@ -164,6 +164,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Target System")
 	bool IsLocked() const;
 
+	//Sets control and pawn rotation for owner.
+	//True disables movement orientation and sets follow controller yaw to true
+	//This is no longer called directly inside. It is triggered via a GA
+	UFUNCTION(BlueprintCallable, Category = "Target System")
+	void SetOwnerPawnLockOnState(bool State);
+
 private:
 	UPROPERTY()
 	AActor* OwnerActor;
