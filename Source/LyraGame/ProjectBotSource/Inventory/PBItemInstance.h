@@ -30,6 +30,9 @@ public:
 
 	UPBInventoryItemInstance(const FObjectInitializer& ObjectInitializer);
 
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	static UPBInventoryItemInstance* DuplicateItemInstance(UPBInventoryItemInstance* Instance, UObject* NewOuter);
+
 	//~UObject interface
 	virtual bool IsSupportedForNetworking() const override { return true; }
 	//~End of UObject interface

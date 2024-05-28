@@ -145,7 +145,7 @@ UPBInventoryItemInstance* FPBInventoryList::AddEntry(UPBItemDefinition* ItemDef,
 	return Result;
 }
 
-void FPBInventoryList::AddEntry(UPBInventoryItemInstance* Instance)
+UPBInventoryItemInstance* FPBInventoryList::AddEntry(UPBInventoryItemInstance* Instance)
 {
 	check(Instance != nullptr);
 	check(OwnerComponent);
@@ -153,12 +153,15 @@ void FPBInventoryList::AddEntry(UPBInventoryItemInstance* Instance)
 	AActor* OwningActor = OwnerComponent->GetOwner();
 	check(OwningActor->HasAuthority());
 
-
 	FPBInventoryEntry& NewEntry = Entries.AddDefaulted_GetRef();
-	NewEntry.Instance = Instance;  //@TODO: Using the actor instead of component as the outer due to UE-127172
+
+	NewEntry.Instance = UPBInventoryItemInstance::DuplicateItemInstance(Instance, OwnerComponent->GetOwner());  //@TODO: Using the actor instead of component as the outer due to UE-127172
+
 	NewEntry.StackCount = 1;
 
 	MarkItemDirty(NewEntry);
+
+	return NewEntry.Instance;
 }
 
 UPBInventoryComponent::UPBInventoryComponent(const FObjectInitializer& ObjectInitializer)
@@ -203,17 +206,23 @@ UPBInventoryItemInstance* UPBInventoryComponent::AddItemDefinition(UPBItemDefini
 	return Result;
 }
 
-void UPBInventoryComponent::AddItemInstance(UPBInventoryItemInstance* ItemInstance)
+UPBInventoryItemInstance* UPBInventoryComponent::AddItemInstance(UPBInventoryItemInstance* ItemInstance)
 {
-	InventoryList.AddEntry(ItemInstance);
-	if (IsUsingRegisteredSubObjectList() && IsReadyForReplication() && ItemInstance)
+	UPBInventoryItemInstance* Result = nullptr;
+
+	Result = InventoryList.AddEntry(ItemInstance);
+	//Result = InventoryList.AddEntry(ItemInstance->GetItemDefinition(), 1);
+
+	if (IsUsingRegisteredSubObjectList() && IsReadyForReplication() && Result)
 	{
-		AddReplicatedSubObject(ItemInstance);
-		for (UPBItemModInstance* Mod : ItemInstance->GetItemMods())
+		AddReplicatedSubObject(Result);
+		for (UPBItemModInstance* Mod : Result->GetItemMods())
 		{
 			AddReplicatedSubObject(Mod);
 		}
 	}
+
+	return Result;
 }
 
 void UPBInventoryComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

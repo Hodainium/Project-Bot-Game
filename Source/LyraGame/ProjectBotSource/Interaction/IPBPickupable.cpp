@@ -110,7 +110,7 @@ void UPBPickupableStatics::PushPickupToPlayer(APawn* PlayerPawn, TScriptInterfac
 
 			if (Instance.Item->GetItemTypeEnum() == EPBItemType::Weapon)
 			{
-				InventoryComponent->AddItemInstance(Instance.Item);
+				UPBInventoryItemInstance* Result = InventoryComponent->AddItemInstance(Instance.Item);
 
 				if (SlotComponent->GetSlotsForEnum(EPBInventorySlotType::Temporary)[0] != nullptr)
 				{
@@ -118,7 +118,7 @@ void UPBPickupableStatics::PushPickupToPlayer(APawn* PlayerPawn, TScriptInterfac
 				}
 				else
 				{
-					SlotComponent->AddItemToSlot(EPBInventorySlotType::Temporary, 0, Instance.Item);
+					SlotComponent->AddItemToSlot(EPBInventorySlotType::Temporary, 0, Result);
 				}
 			}
 

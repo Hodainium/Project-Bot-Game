@@ -9,10 +9,23 @@
 #include "ProjectBotSource/LootSubsystem/PBLootGenGameInstanceSubsystem.h"
 #include "ProjectBotSource/Inventory/PBItemDefinition.h"
 #include "Net/UnrealNetwork.h"
+#include "ProjectBotSource/Modifiers/PBItemModInstance.h"
 
 UPBInventoryItemInstance::UPBInventoryItemInstance(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer), ItemQuality(EPBItemQuality::Quality0)
 {
+}
+
+UPBInventoryItemInstance* UPBInventoryItemInstance::DuplicateItemInstance(UPBInventoryItemInstance* Instance, UObject* NewOuter)
+{
+	UPBInventoryItemInstance* Result = DuplicateObject(Instance, NewOuter);
+	Result->ItemMods.Reset();
+	for (UPBItemModInstance* OldMod : Instance->ItemMods)
+	{
+		Result->ItemMods.Add(DuplicateObject(OldMod, NewOuter));
+	}
+
+	return Result;
 }
 
 void UPBInventoryItemInstance::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

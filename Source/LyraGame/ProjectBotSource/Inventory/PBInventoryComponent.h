@@ -103,7 +103,7 @@ public:
 
 	UPBInventoryItemInstance* AddEntry(UPBItemDefinition* ItemDef, int32 StackCount);
 
-	void AddEntry(UPBInventoryItemInstance* Instance);
+	UPBInventoryItemInstance* AddEntry(UPBInventoryItemInstance* Instance);
 	void RemoveEntry(UPBInventoryItemInstance* Instance);
 
 	bool MarkItemIDDirty(int32 ItemID);
@@ -149,7 +149,7 @@ public:
 	UPBInventoryItemInstance* AddItemDefinition(UPBItemDefinition* ItemDef, int32 StackCount = 1);
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = Inventory)
-	void AddItemInstance(UPBInventoryItemInstance* ItemInstance);
+	UPBInventoryItemInstance* AddItemInstance(UPBInventoryItemInstance* ItemInstance);
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
