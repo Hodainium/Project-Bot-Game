@@ -101,6 +101,11 @@ namespace PB_Movement_Tags
 	UE_DEFINE_GAMEPLAY_TAG(TAG_GAMEPLAY_MOVEMENTSTOPPED, "Movement.Modifier.MovementStopped");
 }
 
+namespace PB_Inventory_Tags
+{
+	UE_DEFINE_GAMEPLAY_TAG(TAG_INVENTORY_PUSHITEMPROMPT, "GameplayEvent.Inventory.PushPrompt");
+}
+
 namespace PB_ItemSlots_Tags
 {
 	UE_DEFINE_GAMEPLAY_TAG(TAG_ITEMSLOTS_MESSAGE_SLOTSCHANGED, "Inventory.ItemSlots.Message.SlotsChanged");

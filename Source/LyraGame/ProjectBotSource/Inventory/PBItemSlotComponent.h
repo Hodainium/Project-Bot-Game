@@ -112,6 +112,9 @@ public:
 	UFUNCTION(Server, Reliable, BlueprintCallable, Category = "Slots")
 	void SetActiveSlotIndexForEnum(EPBInventorySlotType SlotType, int32 NewIndex);
 
+	UFUNCTION(Client, Reliable, BlueprintCallable, Category = "Slots")
+	void Client_SendClientItemPrompt();
+
 	UFUNCTION(BlueprintCallable, BlueprintPure = false)
 	TArray<UPBInventoryItemInstance*> GetSlotsForEnum(EPBInventorySlotType SlotType) const
 	{

@@ -88,6 +88,7 @@ void UPBPickupableStatics::PushPickupToPlayer(APawn* PlayerPawn, TScriptInterfac
 				else
 				{
 					SlotComponent->AddItemToSlot(EPBInventorySlotType::Temporary, 0, ItemInstanceToAdd);
+					SlotComponent->Client_SendClientItemPrompt();
 				}
 			}
 			else
@@ -119,6 +120,7 @@ void UPBPickupableStatics::PushPickupToPlayer(APawn* PlayerPawn, TScriptInterfac
 				else
 				{
 					SlotComponent->AddItemToSlot(EPBInventorySlotType::Temporary, 0, Result);
+					SlotComponent->Client_SendClientItemPrompt();
 				}
 			}
 

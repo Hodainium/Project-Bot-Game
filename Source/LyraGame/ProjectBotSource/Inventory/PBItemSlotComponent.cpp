@@ -10,6 +10,7 @@
 #include "ProjectBotSource/Inventory/ItemTypes/PBWeaponItemDefinition.h"
 #include "Logging/StructuredLog.h"
 #include "Net/UnrealNetwork.h"
+#include "AbilitySystemBlueprintLibrary.h"
 #include "ProjectBotSource/Tags/PB_Tags.h"
 
 UPBItemSlotComponent::UPBItemSlotComponent(const FObjectInitializer& ObjectInitializer)
@@ -87,6 +88,12 @@ void UPBItemSlotComponent::CycleActiveSlotBackward(EPBInventorySlotType SlotType
 
 	//Get an empty slot. No other occupied slots are available
 	SetActiveSlotIndexForEnum(SlotType, GetNextFreeItemSlot(SlotType));
+}
+
+void UPBItemSlotComponent::Client_SendClientItemPrompt_Implementation()
+{
+	UE_LOGFMT(LogPBGame, Warning, "Inventory collect rpc client recieved");
+	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(GetOwner(), PB_Inventory_Tags::TAG_INVENTORY_PUSHITEMPROMPT, FGameplayEventData());
 }
 
 UPBInventoryItemInstance* UPBItemSlotComponent::GetItemAtIndex(FPBInventorySlotIndex Index) const
