@@ -67,14 +67,14 @@ int UPBLootGenGameInstanceSubsystem::GenerateNumMods(EPBItemQuality InQuality)
 	return FMath::RandRange((static_cast<int>(InQuality) + 1) / 2, static_cast<int>(InQuality) + 1);
 }
 
-UPBInventoryItemInstance* UPBLootGenGameInstanceSubsystem::GenerateItemInstance(UPBItemDefinition* ItemDef)
+UPBInventoryItemInstance* UPBLootGenGameInstanceSubsystem::GenerateItemInstance(UObject* Outer, UPBItemDefinition* ItemDef)
 {
 	if(!ItemDef)
 	{
 		return nullptr;
 	}
 
-	UPBInventoryItemInstance* Instance = NewObject<UPBInventoryItemInstance>(GetWorld());
+	UPBInventoryItemInstance* Instance = NewObject<UPBInventoryItemInstance>(Outer);
 	Instance->SetItemDef(ItemDef);
 	for (UPBInventoryItemFragment* Fragment : ItemDef->Fragments)
 	{
@@ -112,7 +112,7 @@ void UPBLootGenGameInstanceSubsystem::GenerateItemInstanceFromSoftDel(TSoftObjec
 		{
 			if (UPBItemDefinition* ItemDef = ItemDefRef.Get())
 			{
-				UPBInventoryItemInstance* WeaponInstance = GenerateItemInstance(ItemDef);
+				UPBInventoryItemInstance* WeaponInstance = GenerateItemInstance(GetWorld(), ItemDef);
 
 				TArray<FAssetData> TotalModData;
 
@@ -187,6 +187,107 @@ void UPBLootGenGameInstanceSubsystem::GenerateItemInstanceFromSoftDel(TSoftObjec
 						if (UPBItemModDefinition* ModDef = Cast<UPBItemModDefinition>(UPBAssetManager::Get().GetPrimaryAssetObject(SelectedModIDs[i])))
 						{
 							UPBItemModInstance* ModInstance = NewObject<UPBItemModInstance>(WeaponInstance->GetOuter()); //WeaponInstance  //@TODO: Using the actor instead of component as the outer due to UE-127172
+							ModInstance->SetModDefinition(ModDef);
+							ModInstance->SetModQuality(SelectedQualities[i]);
+
+							//ModInstance->SetModLevelOffset();
+							WeaponInstance->AddItemMod(ModInstance);
+						}
+					}
+					Delegate.ExecuteIfBound(WeaponInstance);
+				});
+				StartAsyncLoading();
+			}
+		});
+		StartAsyncLoading();
+	}
+}
+
+void UPBLootGenGameInstanceSubsystem::GenerateItemInstanceFromSoftDelForOuter(UObject* Outer, 
+	TSoftObjectPtr<UPBItemDefinition> ItemDefRef, const FPBItemInstanceGenerated& Delegate)
+{
+	// Async load the indicator, and pool the results so that it's easy to use and reuse the widgets.
+	if (!ItemDefRef.IsNull())
+	{
+		AsyncLoad(ItemDefRef, [this, Outer, ItemDefRef, Delegate]()
+		{
+			if (UPBItemDefinition* ItemDef = ItemDefRef.Get())
+			{
+				UPBInventoryItemInstance* WeaponInstance = GenerateItemInstance(Outer, ItemDef);
+
+				TArray<FAssetData> TotalModData;
+
+				FPBItemSearchQuery Query = FPBItemSearchQuery();
+
+				Query.AccumulatedTags.AppendTags(ItemDef->GetItemTags());
+
+				//Query.BlockedModQualities = GetBlockedItemQualitiesForRange(EPBItemQuality::Quality0, ItemInstance->GetItemQuality());
+				UPBAssetManager::Get().GetAllItemModsMatching(Query, TotalModData);
+
+				TArray<FPrimaryAssetId> SelectedModIDs;
+				TArray<EPBItemQuality> SelectedQualities;
+
+				int numMods = GenerateNumMods(WeaponInstance->GetItemQuality()); // +1 TODO: Make this a cvar
+
+				//UE_LOGFMT(LogPBLootSubsystem, Warning, "Num mods: {0}", numMods);
+
+
+
+				//Find mods to add
+				for (int i = 0; i < numMods; i++)
+				{
+					bool bModFound = false;
+
+					//static_cast<EPBItemQuality>((static_cast<int>(WeaponInstance->GetItemQuality()) + 1))
+
+					EPBItemQuality MinQuality = static_cast<EPBItemQuality>(static_cast<int>(WeaponInstance->GetItemQuality()) / 2);
+
+					EPBItemQuality RolledModQuality = GenerateItemQuality(MinQuality, WeaponInstance->GetItemQuality()); //GenRarity()
+
+					int offsetFromEndIdx = 0;
+
+					if (TotalModData.Num() > 0) //Make sure we found at least one mod. Prevents crash
+					{
+						do
+						{
+							int maxIndex = TotalModData.Num() - 1 - offsetFromEndIdx;
+							int currentIndex = FMath::RandRange(0, maxIndex);
+
+							//Item quality
+							FString OutQualitiesString;
+							TotalModData[currentIndex].GetTagValue(GET_MEMBER_NAME_CHECKED(UPBItemModDefinition, AvailableQualities), OutQualitiesString);
+							FGameplayTagContainer QualityTags;
+							QualityTags.FromExportString(OutQualitiesString);
+
+							if (QualityTags.HasTag(ConvertQualityEnumToTag(RolledModQuality)))
+							{
+								SelectedModIDs.Add(TotalModData[currentIndex].GetPrimaryAssetId());
+								SelectedQualities.Add(RolledModQuality);
+								TotalModData.RemoveAt(currentIndex);
+								bModFound = true;
+
+								//UE_LOGFMT(LogPBLootSubsystem, Warning, "Mod found!!!");
+							}
+							else
+							{
+								TotalModData.Swap(currentIndex, maxIndex);
+
+								offsetFromEndIdx++;
+							}
+						} while (!bModFound && offsetFromEndIdx < TotalModData.Num());
+					}
+
+				}
+
+				TArray<FName> Bundles;
+
+				AsyncPreloadPrimaryAssetsAndBundles(SelectedModIDs, Bundles, [this, SelectedModIDs, SelectedQualities, Outer, WeaponInstance, Delegate]()
+				{
+					for (int i = 0; i < SelectedModIDs.Num(); i++)
+					{
+						if (UPBItemModDefinition* ModDef = Cast<UPBItemModDefinition>(UPBAssetManager::Get().GetPrimaryAssetObject(SelectedModIDs[i])))
+						{
+							UPBItemModInstance* ModInstance = NewObject<UPBItemModInstance>(Outer);
 							ModInstance->SetModDefinition(ModDef);
 							ModInstance->SetModQuality(SelectedQualities[i]);
 

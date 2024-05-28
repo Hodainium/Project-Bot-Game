@@ -58,13 +58,16 @@ public:
 	FText GetAdjectiveForKey(FName InKey);
 
 	UFUNCTION(BlueprintCallable, Category = "LootGenSystem")
-	UPBInventoryItemInstance* GenerateItemInstance(UPBItemDefinition* ItemDef);
+	UPBInventoryItemInstance* GenerateItemInstance(UObject* Outer, UPBItemDefinition* ItemDef);
 
 	UFUNCTION(BlueprintCallable, Category = "LootGenSystem")
 	void GetCompatibleModAssetsForItemInstance(UPBInventoryItemInstance* ItemInstance, TArray<FAssetData>& OutDataArray);
 
 	UFUNCTION(BlueprintCallable, Category = "LootGenSystem", meta = (AutoCreateRefTerm = "Delegate"))
 	void GenerateItemInstanceFromSoftDel(TSoftObjectPtr<UPBItemDefinition> ItemDefRef, const FPBItemInstanceGenerated& Delegate);
+
+	UFUNCTION(BlueprintCallable, Category = "LootGenSystem", meta = (AutoCreateRefTerm = "Delegate"))
+	void GenerateItemInstanceFromSoftDelForOuter(UObject* Outer, TSoftObjectPtr<UPBItemDefinition> ItemDefRef, const FPBItemInstanceGenerated& Delegate);
 
 protected:
 	UPROPERTY()

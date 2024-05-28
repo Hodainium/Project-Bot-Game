@@ -316,6 +316,10 @@ bool UPBInventoryComponent::ReplicateSubobjects(UActorChannel* Channel, FOutBunc
 		if (Instance && IsValid(Instance))
 		{
 			WroteSomething |= Channel->ReplicateSubobject(Instance, *Bunch, *RepFlags);
+			for (UPBItemModInstance* Mod : Instance->GetItemMods())
+			{
+				WroteSomething |= Channel->ReplicateSubobject(Mod, *Bunch, *RepFlags);
+			}
 		}
 	}
 
@@ -336,6 +340,10 @@ void UPBInventoryComponent::ReadyForReplication()
 			if (IsValid(Instance))
 			{
 				AddReplicatedSubObject(Instance);
+				for (UPBItemModInstance* Mod : Instance->GetItemMods())
+				{
+					AddReplicatedSubObject(Mod);
+				}
 			}
 		}
 	}

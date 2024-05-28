@@ -41,17 +41,35 @@ public:
 
 	APBWorldCollectableInstance();
 
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
 	virtual FPBInventoryPickup GetPickupInventory() const override;
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
-	void OnItemInstanceSet();
+	void K2_OnItemInstanceSet();
+
+	UFUNCTION(BlueprintCallable)
+	void SetItemInstance(UPBInventoryItemInstance* InItem);
+
+	
 
 	UFUNCTION()
 	void OnRep_ItemInstance();
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
+	virtual void OnConstruction(const FTransform& Transform) override;
+
+	//~UObject interface
+	virtual bool ReplicateSubobjects(class UActorChannel* Channel, class FOutBunch* Bunch, FReplicationFlags* RepFlags) override;
+	//~End of UObject interface
+
+
+
 protected:
+
+	void OnItemInstanceSet();
+
 	UPROPERTY(BlueprintReadWrite, ReplicatedUsing = "OnRep_ItemInstance", meta = (ExposeOnSpawn = true))
 	TObjectPtr<UPBInventoryItemInstance> ItemInstance = nullptr;
 };
