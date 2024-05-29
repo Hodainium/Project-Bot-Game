@@ -91,7 +91,7 @@ void UPBItemSlotComponent::CycleActiveSlotBackward(EPBInventorySlotType SlotType
 	SetActiveSlotIndexForEnum(SlotType, GetNextFreeItemSlot(SlotType));
 }
 
-void UPBItemSlotComponent::Client_SendClientItemPrompt_Implementation()
+void UPBItemSlotComponent::Client_OpenInventory_Implementation()
 {
 	UE_LOGFMT(LogPBGame, Warning, "Inventory collect rpc client recieved");
 	UE_LOGFMT(LogPBGame, Warning, "pending role2: {role}", GetOwnerRole());
@@ -458,6 +458,17 @@ void UPBItemSlotComponent::Handle_OnRep_SlotsChanged(EPBInventorySlotType SlotTy
 	Message.SlotType = SlotType;
 
 	UE_LOGFMT(LogPBGame, Warning, "This is happening!");
+
+	//We push the inventory ui to server and clients whenever an item shows up in the temp slot.
+	if(SlotType == EPBInventorySlotType::Temporary)
+	{
+		TArray<UPBInventoryItemInstance*> Slots = GetSlotsForEnum(EPBInventorySlotType::Temporary);
+		if(Slots.IsValidIndex(0) && Slots[0] != nullptr)
+		{
+			UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(GetOwner(), PB_Inventory_Tags::TAG_INVENTORY_PUSHITEMPROMPT, FGameplayEventData());
+		}
+	}
+
 
 	UGameplayMessageSubsystem& MessageSystem = UGameplayMessageSubsystem::Get(this);
 	MessageSystem.BroadcastMessage(PB_ItemSlots_Tags::TAG_ITEMSLOTS_MESSAGE_SLOTSCHANGED, Message);

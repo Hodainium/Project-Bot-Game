@@ -113,7 +113,7 @@ public:
 	void SetActiveSlotIndexForEnum(EPBInventorySlotType SlotType, int32 NewIndex);
 
 	UFUNCTION(Client, Reliable, BlueprintCallable, Category = "Slots")
-	void Client_SendClientItemPrompt();
+	void Client_OpenInventory();
 
 	UFUNCTION(BlueprintCallable, BlueprintPure = false)
 	TArray<UPBInventoryItemInstance*> GetSlotsForEnum(EPBInventorySlotType SlotType) const
