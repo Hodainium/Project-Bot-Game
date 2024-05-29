@@ -36,6 +36,7 @@ void UPBItemSlotComponent::BeginPlay()
 
 void UPBItemSlotComponent::RequestSwapOperation(FPBInventorySlotIndex SourceIndex, FPBInventorySlotIndex TargetIndex)
 {
+	UE_LOGFMT(LogPBGame, Warning, "pending set to true");
 	IsPendingServerConfirmation = true;
 	Server_SwapSlots(SourceIndex, TargetIndex);
 }
@@ -93,6 +94,7 @@ void UPBItemSlotComponent::CycleActiveSlotBackward(EPBInventorySlotType SlotType
 void UPBItemSlotComponent::Client_SendClientItemPrompt_Implementation()
 {
 	UE_LOGFMT(LogPBGame, Warning, "Inventory collect rpc client recieved");
+	UE_LOGFMT(LogPBGame, Warning, "pending role2: {role}", GetOwnerRole());
 	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(GetOwner(), PB_Inventory_Tags::TAG_INVENTORY_PUSHITEMPROMPT, FGameplayEventData());
 }
 
@@ -197,16 +199,23 @@ void UPBItemSlotComponent::Server_SwapSlots_Implementation(FPBInventorySlotIndex
 		bWasSuccessful = true;
 	}
 
-	Client_SwapSlots_Implementation(bWasSuccessful);
+	Client_SwapSlots(bWasSuccessful);
 }
 
 void UPBItemSlotComponent::Client_SwapSlots_Implementation(bool bWasSuccessful)
 {
+	UE_LOGFMT(LogPBGame, Warning, "pending set to false");
 	IsPendingServerConfirmation = false;
+
+	UE_LOGFMT(LogPBGame, Warning, "pending role: {role}", GetOwnerRole());
+
+
+	UE_LOGFMT(LogPBGame, Warning, "pending tried to broadcast");
 
 	//Broadcast a message here
 	if(OnReceivedServerSwapConfirmation.IsBound())
 	{
+		UE_LOGFMT(LogPBGame, Warning, "pending tried to broadcast passed check");
 		OnReceivedServerSwapConfirmation.Broadcast(bWasSuccessful);
 	}
 }
