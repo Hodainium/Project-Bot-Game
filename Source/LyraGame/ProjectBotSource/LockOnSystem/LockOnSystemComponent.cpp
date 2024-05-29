@@ -384,8 +384,18 @@ void ULockOnSystemComponent::TargetLockOn(AActor* TargetToLockOn)
 				ULockOnSystemTargetComponent* TargetComp = TargetToLockOn->GetComponentByClass<ULockOnSystemTargetComponent>();
 
 				UIndicatorDescriptor* Indicator = NewObject<UIndicatorDescriptor>();
+
+				if(UMeshComponent* MeshComp = TargetToLockOn->GetComponentByClass<UMeshComponent>())
+				{
+					Indicator->SetSceneComponent(MeshComp);
+					Indicator->SetComponentSocketName(TargetComp->GetSocketName());
+				}
+				else
+				{
+					Indicator->SetSceneComponent(TargetToLockOn->GetRootComponent());
+				}
+
 				Indicator->SetDataObject(TargetToLockOn);
-				Indicator->SetSceneComponent(TargetToLockOn->GetRootComponent());
 				/*Indicator->SetSceneComponent(TargetToLockOn->FindComponentByClass<UMeshComponent>());
 				Indicator->SetComponentSocketName(TargetComp->GetSocketName());*/
 				Indicator->SetWorldPositionOffset(TargetComp->GetTargetOffset());
