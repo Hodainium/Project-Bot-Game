@@ -38,6 +38,8 @@ void UPBItemSlotComponent::RequestSwapOperation(FPBInventorySlotIndex SourceInde
 {
 	UE_LOGFMT(LogPBGame, Warning, "pending set to true");
 	IsPendingServerConfirmation = true;
+	PendingSlotData.Add(SourceIndex);
+	PendingSlotData.Add(TargetIndex);
 	Server_SwapSlots(SourceIndex, TargetIndex);
 }
 
@@ -117,7 +119,7 @@ void UPBItemSlotComponent::SetActiveSlotIndexForEnum_Implementation(EPBInventory
 		Slots.ActiveSlotIndex = NewIndex;
 
 		EquipItemInSlot(SlotType);
-		Handle_OnRep_ActiveSlotIndexChanged(SlotType);
+		Handle_OnRep_ActiveSlotIndexChanged(SlotType, Slots);
 	}
 }
 
@@ -169,7 +171,9 @@ bool UPBItemSlotComponent::TryFindIndexForItem(UPBInventoryItemInstance* ItemToF
 void UPBItemSlotComponent::Server_SwapSlots_Implementation(FPBInventorySlotIndex SourceIndex, FPBInventorySlotIndex TargetIndex)
 {
 	FPBInventorySlotStruct& SourceSlots = GetSlotStructForEnum(SourceIndex.SlotType);
+	FPBInventorySlotStruct PreviousSource = SourceSlots;
 	FPBInventorySlotStruct& TargetSlots = GetSlotStructForEnum(TargetIndex.SlotType);
+	FPBInventorySlotStruct PreviousTarget = TargetSlots;
 
 	bool bWasSuccessful = false;
 
@@ -181,8 +185,8 @@ void UPBItemSlotComponent::Server_SwapSlots_Implementation(FPBInventorySlotIndex
 
 		SourceSlots.SlotArray[SourceIndex.SlotIndex] = TempInstance;
 
-		Handle_OnRep_SlotsChanged(SourceIndex.SlotType);
-		Handle_OnRep_SlotsChanged(TargetIndex.SlotType);
+		Handle_OnRep_SlotsChanged(SourceIndex.SlotType, PreviousSource);
+		Handle_OnRep_SlotsChanged(TargetIndex.SlotType, PreviousTarget);
 
 		if(SourceSlots.ActiveSlotIndex == SourceIndex.SlotIndex)
 		{
@@ -202,27 +206,34 @@ void UPBItemSlotComponent::Server_SwapSlots_Implementation(FPBInventorySlotIndex
 	Client_SwapSlots(bWasSuccessful);
 }
 
-void UPBItemSlotComponent::Client_SwapSlots_Implementation(bool bWasSuccessful)
+void UPBItemSlotComponent::Client_SwapSlots_Implementation(bool bSuccessful)
 {
 	UE_LOGFMT(LogPBGame, Warning, "pending set to false");
 	IsPendingServerConfirmation = false;
 
-	UE_LOGFMT(LogPBGame, Warning, "pending role: {role}", GetOwnerRole());
+	if(!bSuccessful)
+	{
+		PendingSlotData.Reset();
+	}
+
+	if (PendingSlotData.IsEmpty())
+	{
+		//Broadcast a message here
+		if (OnReceivedServerSwapData.IsBound())
+		{
+			UE_LOGFMT(LogPBGame, Warning, "broadcasting data recieved from client rpc");
+			OnReceivedServerSwapData.Broadcast();
+		}
+	}
 
 
 	UE_LOGFMT(LogPBGame, Warning, "pending tried to broadcast");
-
-	//Broadcast a message here
-	if(OnReceivedServerSwapConfirmation.IsBound())
-	{
-		UE_LOGFMT(LogPBGame, Warning, "pending tried to broadcast passed check");
-		OnReceivedServerSwapConfirmation.Broadcast(bWasSuccessful);
-	}
 }
 
 void UPBItemSlotComponent::SetNumSlotsForEnum(EPBInventorySlotType SlotType, int32 InNum)
 {
 	FPBInventorySlotStruct& Slots = GetSlotStructForEnum(SlotType);
+	FPBInventorySlotStruct PreviousSlots = Slots;
 
 	if(Slots.SlotArray.Num() == InNum)
 	{
@@ -265,13 +276,15 @@ void UPBItemSlotComponent::SetNumSlotsForEnum(EPBInventorySlotType SlotType, int
 
 	Slots.NumSlots = InNum;
 	
-	Handle_OnRep_NumSlotsChanged(SlotType);
-	Handle_OnRep_SlotsChanged(SlotType);
+	Handle_OnRep_NumSlotsChanged(SlotType, PreviousSlots);
+	Handle_OnRep_SlotsChanged(SlotType, PreviousSlots);
 }
 
 void UPBItemSlotComponent::AddItemToSlot(EPBInventorySlotType SlotType, int32 SlotIndex, UPBInventoryItemInstance* Item)
 {
 	FPBInventorySlotStruct& Slots = GetSlotStructForEnum(SlotType);
+
+	FPBInventorySlotStruct PreviousSlots = Slots;
 
 	if (Slots.SlotArray.IsValidIndex(SlotIndex) && (Item != nullptr))
 	{
@@ -279,7 +292,7 @@ void UPBItemSlotComponent::AddItemToSlot(EPBInventorySlotType SlotType, int32 Sl
 		{
 			UE_LOGFMT(LogPBGame, Warning, "Changing slot at index: {idx}", SlotIndex);
 			Slots.SlotArray[SlotIndex] = Item;
-			Handle_OnRep_SlotsChanged(SlotType);
+			Handle_OnRep_SlotsChanged(SlotType, PreviousSlots);
 		}
 	}
 }
@@ -287,6 +300,7 @@ void UPBItemSlotComponent::AddItemToSlot(EPBInventorySlotType SlotType, int32 Sl
 void UPBItemSlotComponent::RemoveItemAtSlotIndex(EPBInventorySlotType SlotType, int32 SlotIndex)
 {
 	FPBInventorySlotStruct& Slots = GetSlotStructForEnum(SlotType);
+	FPBInventorySlotStruct PreviousSlots = Slots;
 
 	UPBInventoryItemInstance* Result = nullptr;
 
@@ -303,7 +317,7 @@ void UPBItemSlotComponent::RemoveItemAtSlotIndex(EPBInventorySlotType SlotType, 
 		if (Result != nullptr)
 		{
 			Slots.SlotArray[SlotIndex] = nullptr;
-			Handle_OnRep_SlotsChanged(SlotType);
+			Handle_OnRep_SlotsChanged(SlotType, PreviousSlots);
 		}
 	}
 
@@ -317,18 +331,20 @@ void UPBItemSlotComponent::RemoveItemAtSlotIndex(EPBInventorySlotType SlotType, 
 	}
 }
 
-void UPBItemSlotComponent::TryRemoveItemFromSlots(UPBInventoryItemInstance* Item)
+bool UPBItemSlotComponent::TryRemoveItemFromSlots(UPBInventoryItemInstance* Item)
 {
 	FPBInventorySlotIndex Index;
 	if(TryFindIndexForItem(Item, Index))
 	{
 		RemoveItemAtSlotIndex(Index.SlotType, Index.SlotIndex);
+		return true;
 	}
+	return false;
 }
 
 bool UPBItemSlotComponent::GetIsPendingServerConfirmation()
 {
-	return IsPendingServerConfirmation;
+	return IsPendingServerConfirmation || !PendingSlotData.IsEmpty();
 }
 
 void UPBItemSlotComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -450,20 +466,58 @@ UPBEquipmentManagerComponent* UPBItemSlotComponent::FindEquipmentComponent() con
 	return nullptr;
 }
 
-void UPBItemSlotComponent::Handle_OnRep_SlotsChanged(EPBInventorySlotType SlotType)
+void UPBItemSlotComponent::Handle_OnRep_SlotsChanged(EPBInventorySlotType SlotType, const FPBInventorySlotStruct& PreviousValue)
 {
+	const FPBInventorySlotStruct& Slots = GetSlotStructForEnum_Const(SlotType);
+
 	FPBItemSlotsChangedMessage Message;
 	Message.Owner = GetOwner();
 	Message.Slots = GetSlotStructForEnum_Const(SlotType).SlotArray;
 	Message.SlotType = SlotType;
 
-	UE_LOGFMT(LogPBGame, Warning, "This is happening!");
+	UE_LOGFMT(LogPBGame, Warning, "Handle_OnRep_SlotsChanged");
+
+	TArray<FPBInventorySlotIndex> ConfirmedSlotData;
+
+	for (const FPBInventorySlotIndex& PendingData : PendingSlotData)
+	{
+		UE_LOGFMT(LogPBGame, Warning, "OnRep tested slots");
+		if (PendingData.SlotType == SlotType)
+		{
+			if(Slots.SlotArray.IsValidIndex(PendingData.SlotIndex) && PreviousValue.SlotArray.IsValidIndex(PendingData.SlotIndex))
+			{
+				UE_LOGFMT(LogPBGame, Warning, "OnRep tested equality");
+
+				if (Slots.SlotArray[PendingData.SlotIndex] != PreviousValue.SlotArray[PendingData.SlotIndex])
+				{
+					UE_LOGFMT(LogPBGame, Warning, "OnRep found data to remove");
+					ConfirmedSlotData.Add(PendingData);
+				}
+			}
+		}
+	}
+
+	for (const FPBInventorySlotIndex& ConfirmedData : ConfirmedSlotData)
+	{
+		PendingSlotData.Remove(ConfirmedData);
+		UE_LOGFMT(LogPBGame, Warning, "1 Pending data removed");
+	}
+
+	if(PendingSlotData.IsEmpty())
+	{
+		//Broadcast a message here
+		if (OnReceivedServerSwapData.IsBound())
+		{
+			UE_LOGFMT(LogPBGame, Warning, "broadcasting data recieved from onrep");
+			OnReceivedServerSwapData.Broadcast();
+		}
+	}
 
 	//We push the inventory ui to server and clients whenever an item shows up in the temp slot.
 	if(SlotType == EPBInventorySlotType::Temporary)
 	{
-		TArray<UPBInventoryItemInstance*> Slots = GetSlotsForEnum(EPBInventorySlotType::Temporary);
-		if(Slots.IsValidIndex(0) && Slots[0] != nullptr)
+		TArray<UPBInventoryItemInstance*> SlotsTemp = GetSlotsForEnum(EPBInventorySlotType::Temporary);
+		if(SlotsTemp.IsValidIndex(0) && SlotsTemp[0] != nullptr)
 		{
 			UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(GetOwner(), PB_Inventory_Tags::TAG_INVENTORY_PUSHITEMPROMPT, FGameplayEventData());
 		}
@@ -474,7 +528,7 @@ void UPBItemSlotComponent::Handle_OnRep_SlotsChanged(EPBInventorySlotType SlotTy
 	MessageSystem.BroadcastMessage(PB_ItemSlots_Tags::TAG_ITEMSLOTS_MESSAGE_SLOTSCHANGED, Message);
 }
 
-void UPBItemSlotComponent::Handle_OnRep_NumSlotsChanged(EPBInventorySlotType SlotType)
+void UPBItemSlotComponent::Handle_OnRep_NumSlotsChanged(EPBInventorySlotType SlotType, const FPBInventorySlotStruct& PreviousValue)
 {
 	FPBItemSlotsNumSlotsChangedMessage Message;
 	Message.Owner = GetOwner();
@@ -487,7 +541,7 @@ void UPBItemSlotComponent::Handle_OnRep_NumSlotsChanged(EPBInventorySlotType Slo
 	MessageSystem.BroadcastMessage(PB_ItemSlots_Tags::TAG_ITEMSLOTS_MESSAGE_NUMSLOTSCHANGED, Message);
 }
 
-void UPBItemSlotComponent::Handle_OnRep_ActiveSlotIndexChanged(EPBInventorySlotType SlotType)
+void UPBItemSlotComponent::Handle_OnRep_ActiveSlotIndexChanged(EPBInventorySlotType SlotType, const FPBInventorySlotStruct& PreviousValue)
 {
 	FPBItemSlotsActiveIndexChangedMessage Message;
 	Message.Owner = GetOwner();
@@ -502,17 +556,17 @@ void UPBItemSlotComponent::OnRep_SlotStruct_Weapon_L(FPBInventorySlotStruct& Pre
 {
 	if (SlotStruct_Weapon_L.SlotArray != PreviousValue.SlotArray)
 	{
-		Handle_OnRep_SlotsChanged(EPBInventorySlotType::Weapon_L);
+		Handle_OnRep_SlotsChanged(EPBInventorySlotType::Weapon_L, PreviousValue);
 	}
 
 	if (SlotStruct_Weapon_L.NumSlots != PreviousValue.NumSlots)
 	{
-		Handle_OnRep_NumSlotsChanged(EPBInventorySlotType::Weapon_L);
+		Handle_OnRep_NumSlotsChanged(EPBInventorySlotType::Weapon_L, PreviousValue);
 	}
 
 	if (SlotStruct_Weapon_L.ActiveSlotIndex != PreviousValue.ActiveSlotIndex)
 	{
-		Handle_OnRep_ActiveSlotIndexChanged(EPBInventorySlotType::Weapon_L);
+		Handle_OnRep_ActiveSlotIndexChanged(EPBInventorySlotType::Weapon_L, PreviousValue);
 	}
 }
 
@@ -520,17 +574,17 @@ void UPBItemSlotComponent::OnRep_SlotStruct_Weapon_R(FPBInventorySlotStruct& Pre
 {
 	if (SlotStruct_Weapon_R.SlotArray != PreviousValue.SlotArray)
 	{
-		Handle_OnRep_SlotsChanged(EPBInventorySlotType::Weapon_R);
+		Handle_OnRep_SlotsChanged(EPBInventorySlotType::Weapon_R, PreviousValue);
 	}
 
 	if (SlotStruct_Weapon_R.NumSlots != PreviousValue.NumSlots)
 	{
-		Handle_OnRep_NumSlotsChanged(EPBInventorySlotType::Weapon_R);
+		Handle_OnRep_NumSlotsChanged(EPBInventorySlotType::Weapon_R, PreviousValue);
 	}
 
 	if (SlotStruct_Weapon_R.ActiveSlotIndex != PreviousValue.ActiveSlotIndex)
 	{
-		Handle_OnRep_ActiveSlotIndexChanged(EPBInventorySlotType::Weapon_R);
+		Handle_OnRep_ActiveSlotIndexChanged(EPBInventorySlotType::Weapon_R, PreviousValue);
 	}
 }
 
@@ -538,17 +592,17 @@ void UPBItemSlotComponent::OnRep_SlotStruct_Temporary(FPBInventorySlotStruct& Pr
 {
 	if (SlotStruct_Temporary.SlotArray != PreviousValue.SlotArray)
 	{
-		Handle_OnRep_SlotsChanged(EPBInventorySlotType::Temporary);
+		Handle_OnRep_SlotsChanged(EPBInventorySlotType::Temporary, PreviousValue);
 	}
 
 	if (SlotStruct_Temporary.NumSlots != PreviousValue.NumSlots)
 	{
-		Handle_OnRep_NumSlotsChanged(EPBInventorySlotType::Temporary);
+		Handle_OnRep_NumSlotsChanged(EPBInventorySlotType::Temporary, PreviousValue);
 	}
 
 	if (SlotStruct_Temporary.ActiveSlotIndex != PreviousValue.ActiveSlotIndex)
 	{
-		Handle_OnRep_ActiveSlotIndexChanged(EPBInventorySlotType::Temporary);
+		Handle_OnRep_ActiveSlotIndexChanged(EPBInventorySlotType::Temporary, PreviousValue);
 	}
 }
 
@@ -556,17 +610,17 @@ void UPBItemSlotComponent::OnRep_SlotStruct_Item(FPBInventorySlotStruct& Previou
 {
 	if (SlotStruct_Temporary.SlotArray != PreviousValue.SlotArray)
 	{
-		Handle_OnRep_SlotsChanged(EPBInventorySlotType::Item);
+		Handle_OnRep_SlotsChanged(EPBInventorySlotType::Item, PreviousValue);
 	}
 
 	if (SlotStruct_Temporary.NumSlots != PreviousValue.NumSlots)
 	{
-		Handle_OnRep_NumSlotsChanged(EPBInventorySlotType::Item);
+		Handle_OnRep_NumSlotsChanged(EPBInventorySlotType::Item, PreviousValue);
 	}
 
 	if (SlotStruct_Temporary.ActiveSlotIndex != PreviousValue.ActiveSlotIndex)
 	{
-		Handle_OnRep_ActiveSlotIndexChanged(EPBInventorySlotType::Item);
+		Handle_OnRep_ActiveSlotIndexChanged(EPBInventorySlotType::Item, PreviousValue);
 	}
 }
 

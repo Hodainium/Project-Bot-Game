@@ -16,7 +16,7 @@ class UPBEquipmentInstance;
 class UPBInventoryItemInstance;
 
 // Delegate signature
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPBOnReceivedServerSwapConfirmation, bool, bApproved);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FPBOnReceivedServerSwapData);
 
 UENUM(BlueprintType)
 enum class EPBInventorySlotType : uint8
@@ -24,9 +24,50 @@ enum class EPBInventorySlotType : uint8
 	Weapon_L,
 	Weapon_R,
 	Temporary,
-	Item
+	Item,
+	Invalid
 };
-ENUM_RANGE_BY_FIRST_AND_LAST(EPBInventorySlotType, EPBInventorySlotType::Weapon_L, EPBInventorySlotType::Item);
+ENUM_RANGE_BY_FIRST_AND_LAST(EPBInventorySlotType, EPBInventorySlotType::Weapon_L, EPBInventorySlotType::Invalid);
+
+USTRUCT(BlueprintType)
+struct FPBInventorySlotIndex
+{
+	GENERATED_BODY()
+
+public:
+
+	FPBInventorySlotIndex()
+	{
+		SlotType = EPBInventorySlotType::Invalid;
+		SlotIndex = 255;
+	}
+
+	bool operator==(const FPBInventorySlotIndex& Other) const
+	{
+		return Equals(Other);
+	}
+
+	bool operator!=(const FPBInventorySlotIndex& Other) const
+	{
+		return !Equals(Other);
+	}
+
+	bool Equals(const FPBInventorySlotIndex& Other) const
+	{
+		return (SlotType == Other.SlotType) && (SlotIndex == Other.SlotIndex);
+	}
+
+	bool IsValid() const
+	{
+		return SlotType != EPBInventorySlotType::Invalid;
+	}
+
+	UPROPERTY(BlueprintReadWrite, Category = Inventory)
+	EPBInventorySlotType SlotType;
+
+	UPROPERTY(BlueprintReadWrite, Category = Inventory)
+	uint8 SlotIndex;
+};
 
 USTRUCT(BlueprintType)
 struct FPBNullEquipmentEntry
@@ -54,40 +95,7 @@ public:
 	uint8 StackNumber;
 };
 
-USTRUCT(BlueprintType)
-struct FPBInventorySlotIndex
-{
-	GENERATED_BODY()
 
-public:
-
-	FPBInventorySlotIndex()
-	{
-		SlotType = EPBInventorySlotType::Weapon_L;
-		SlotIndex = 255;
-	}
-
-	bool operator==(const FPBInventorySlotIndex& Other) const
-	{
-		return Equals(Other);
-	}
-
-	bool operator!=(const FPBInventorySlotIndex& Other) const
-	{
-		return !Equals(Other);
-	}
-
-	bool Equals(const FPBInventorySlotIndex& Other) const
-	{
-		return (SlotType == Other.SlotType) && (SlotIndex == Other.SlotIndex);
-	}
-
-	UPROPERTY(BlueprintReadWrite, Category = Inventory)
-	EPBInventorySlotType SlotType;
-
-	UPROPERTY(BlueprintReadWrite, Category = Inventory)
-	uint8 SlotIndex;
-};
 
 //The item slot component is in charge of equipping items
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
@@ -161,7 +169,7 @@ public:
 	void RemoveItemAtSlotIndex(EPBInventorySlotType SlotType, int32 SlotIndex);
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly)
-	void TryRemoveItemFromSlots(UPBInventoryItemInstance* Item);
+	bool TryRemoveItemFromSlots(UPBInventoryItemInstance* Item);
 
 	UFUNCTION(BlueprintCallable, Category = "ItemSlots|Net")
 	bool GetIsPendingServerConfirmation();
@@ -170,7 +178,7 @@ public:
 
 public:
 	UPROPERTY(BlueprintAssignable)
-	FPBOnReceivedServerSwapConfirmation OnReceivedServerSwapConfirmation;
+	FPBOnReceivedServerSwapData OnReceivedServerSwapData;
 
 	
 
@@ -183,11 +191,11 @@ private:
 
 	UPBEquipmentManagerComponent* FindEquipmentComponent() const;
 
-	void Handle_OnRep_SlotsChanged(EPBInventorySlotType SlotType);
+	void Handle_OnRep_SlotsChanged(EPBInventorySlotType SlotType, const FPBInventorySlotStruct& PreviousValue);
 
-	void Handle_OnRep_NumSlotsChanged(EPBInventorySlotType SlotType);
+	void Handle_OnRep_NumSlotsChanged(EPBInventorySlotType SlotType, const FPBInventorySlotStruct& PreviousValue);
 
-	void Handle_OnRep_ActiveSlotIndexChanged(EPBInventorySlotType SlotType);
+	void Handle_OnRep_ActiveSlotIndexChanged(EPBInventorySlotType SlotType, const FPBInventorySlotStruct& PreviousValue);
 
 protected:
 
@@ -195,11 +203,14 @@ protected:
 	void Server_SwapSlots(FPBInventorySlotIndex SourceIndex, FPBInventorySlotIndex TargetIndex);
 
 	UFUNCTION(BlueprintCallable, Client, Reliable, Category = Inventory)
-	void Client_SwapSlots(bool bWasSuccessful);
+	void Client_SwapSlots(bool bSuccessful);
 
 	//Flag that is set and removed when sending a server swap request and recieving confirmation
 	UPROPERTY()
 	bool IsPendingServerConfirmation;
+	//The remaining slots that need to be checked after network update
+	UPROPERTY()
+	TArray<FPBInventorySlotIndex> PendingSlotData;
 
 	UPROPERTY(EditDefaultsOnly, Category = "ItemSlots|Defaults")
 	int WeaponLStartingSlots = 3;
