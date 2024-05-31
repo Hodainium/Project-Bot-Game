@@ -19,6 +19,7 @@ UPBItemSlotComponent::UPBItemSlotComponent(const FObjectInitializer& ObjectIniti
 	SetIsReplicatedByDefault(true);
 
 	IsPendingServerConfirmation = false;
+
 }
 
 void UPBItemSlotComponent::BeginPlay()
@@ -31,6 +32,11 @@ void UPBItemSlotComponent::BeginPlay()
 		SetNumSlotsForEnum(EPBInventorySlotType::Weapon_R, WeaponRStartingSlots);
 		SetNumSlotsForEnum(EPBInventorySlotType::Temporary, TemporaryStartingSlots);
 		SetNumSlotsForEnum(EPBInventorySlotType::Item, ItemStartingSlots);
+
+		SetActiveSlotIndexForEnum(EPBInventorySlotType::Weapon_L, -1);
+		SetActiveSlotIndexForEnum(EPBInventorySlotType::Weapon_R, -1);
+		SetActiveSlotIndexForEnum(EPBInventorySlotType::Temporary, -1);
+		SetActiveSlotIndexForEnum(EPBInventorySlotType::Item, -1);
 	}
 }
 
