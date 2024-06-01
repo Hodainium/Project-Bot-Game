@@ -42,7 +42,8 @@ public class LyraGame : ModuleRules
 				"Niagara",
 				"AsyncMixin",
 				"ControlFlows",
-				"PropertyPath"
+				"PropertyPath",
+				"RamaMeleePlugin"
 			}
 		);
 

@@ -349,6 +349,11 @@
 		{
 			"Name": "PBGASExtension",
 			"Enabled": false
+		},
+		{
+			"Name": "RamaMeleePlugin",
+			"Enabled": true,
+			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/content/67e8100f9f3f40f293d44c95194e177c"
 		}
 	]
 }
