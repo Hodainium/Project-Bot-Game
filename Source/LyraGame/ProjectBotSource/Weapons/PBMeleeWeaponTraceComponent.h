@@ -27,12 +27,4 @@ public:
 	FPBMeleeHitBatchedSignature PBMeleeWeapon_OnHitBatched;
 
 	virtual bool MeleeSweep(FHitResult& Hit, const TArray<FTransform>& BodyPreviousPose) override;
-
-protected:
-	UFUNCTION()
-	void HandleRamaEvent(AActor* HitActor, UPrimitiveComponent* HitComponent, const FVector& ImpactPoint, const FVector& ImpactNormal, int32 ShapeIndex, FName HitBoneName, const struct FHitResult& HitResult);
-
-private:
-	UPROPERTY(Transient)
-	TArray<FHitResult> BatchedHitResults;
 };
