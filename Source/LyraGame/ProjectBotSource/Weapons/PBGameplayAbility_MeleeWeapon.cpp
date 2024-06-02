@@ -18,6 +18,7 @@
 #include "PBRangedWeaponInstance.h"
 #include "ProjectBotSource/Logs/PBLogChannels.h"
 #include "RamaMeleeWeapon.h"
+#include "Logging/StructuredLog.h"
 
 // Weapon fire will be blocked/canceled if the player has this tag
 //UE_DEFINE_GAMEPLAY_TAG_STATIC(TAG_PB_WeaponFireBlocked, "Ability.Weapon.NoFiring");
@@ -28,6 +29,7 @@ UPBGameplayAbility_MeleeWeapon::UPBGameplayAbility_MeleeWeapon(const FObjectInit
 {
 	//SourceBlockedTags.AddTag(TAG_PB_WeaponFireBlocked);
 	//TargettingSource = EPBAbilityTargetingSource::CameraTowardsFocus;
+	IsTracing = false;
 }
 
 UPBMeleeWeaponInstance* UPBGameplayAbility_MeleeWeapon::GetMeleeWeaponInstance() const
@@ -165,6 +167,8 @@ void UPBGameplayAbility_MeleeWeapon::StartMeleeWeaponTracing()
 {
 	//TODO cache the melee comps so we dont have to search and loop twice
 
+	UE_LOGFMT(LogPBGame, Warning, "Enabled melee trace1");
+
 	UPBMeleeWeaponInstance* Instance = GetMeleeWeaponInstance();
 
 	if(!Instance)
@@ -176,11 +180,15 @@ void UPBGameplayAbility_MeleeWeapon::StartMeleeWeaponTracing()
 
 	if(IsLocallyControlled())
 	{
+		UE_LOGFMT(LogPBGame, Warning, "Enabled melee trace2, size: {num}", SpawnedActors.Num());
+
 		for (AActor* Actor : SpawnedActors)
 		{
 			if (UPBMeleeWeaponTraceComponent* MeleeComp = Actor->GetComponentByClass<UPBMeleeWeaponTraceComponent>())
 			{
 				MeleeComp->StartSwingDamage();
+				IsTracing = true;
+				UE_LOGFMT(LogPBGame, Warning, "Enabled melee trace3");
 				MeleeComp->PBMeleeWeapon_OnHitBatched.AddDynamic(this, &ThisClass::OnWeaponTickFinished);
 			}
 		}
@@ -191,6 +199,8 @@ void UPBGameplayAbility_MeleeWeapon::StopMeleeWeaponTracing()
 {
 	//TODO cache the melee comps so we dont have to search and loop twice
 
+	UE_LOGFMT(LogPBGame, Warning, "Disabled melee trace1");
+
 	UPBMeleeWeaponInstance* Instance = GetMeleeWeaponInstance();
 
 	if (!Instance)
@@ -200,13 +210,17 @@ void UPBGameplayAbility_MeleeWeapon::StopMeleeWeaponTracing()
 
 	TArray<AActor*> SpawnedActors = Instance->GetSpawnedActors();
 
-	if (IsLocallyControlled())
+	if (IsLocallyControlled() && IsTracing)
 	{
+		UE_LOGFMT(LogPBGame, Warning, "Disabled melee trace2");
+
 		for (AActor* Actor : SpawnedActors)
 		{
 			if (UPBMeleeWeaponTraceComponent* MeleeComp = Actor->GetComponentByClass<UPBMeleeWeaponTraceComponent>())
 			{
 				MeleeComp->StopSwingDamage();
+				IsTracing = false;
+				UE_LOGFMT(LogPBGame, Warning, "Disabled melee trace3");
 				MeleeComp->PBMeleeWeapon_OnHitBatched.RemoveDynamic(this, &ThisClass::OnWeaponTickFinished);
 			}
 		}

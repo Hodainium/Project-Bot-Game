@@ -63,4 +63,7 @@ protected:
 
 private:
 	FDelegateHandle OnTargetDataReadyCallbackDelegateHandle;
+
+	UPROPERTY()
+	bool IsTracing;
 };

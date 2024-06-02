@@ -11,7 +11,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPBMeleeHitBatchedSignature, const T
 /**
  * 
  */
-UCLASS()
+UCLASS(BlueprintType, Blueprintable, meta = (BlueprintSpawnableComponent))
 class LYRAGAME_API UPBMeleeWeaponTraceComponent : public URamaMeleeWeapon
 {
 	GENERATED_BODY()
