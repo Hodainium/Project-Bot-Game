@@ -150,7 +150,7 @@ void UPBGameplayAbility_MeleeWeapon::OnTargetDataReadyCallback(const FGameplayAb
 			//WeaponData->AddSpread();
 
 			// Let the blueprint do stuff like apply effects to the targets
-			OnRangedWeaponTargetDataReady(LocalTargetDataHandle);
+			OnMeleeWeaponTargetDataReady(LocalTargetDataHandle);
 		}
 		else
 		{

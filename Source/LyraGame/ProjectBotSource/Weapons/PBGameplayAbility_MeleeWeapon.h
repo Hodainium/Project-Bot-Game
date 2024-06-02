@@ -59,7 +59,7 @@ protected:
 
 	// Called when target data is ready
 	UFUNCTION(BlueprintImplementableEvent)
-	void OnRangedWeaponTargetDataReady(const FGameplayAbilityTargetDataHandle& TargetData);
+	void OnMeleeWeaponTargetDataReady(const FGameplayAbilityTargetDataHandle& TargetData);
 
 private:
 	FDelegateHandle OnTargetDataReadyCallbackDelegateHandle;
