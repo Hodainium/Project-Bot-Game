@@ -3,10 +3,14 @@
 
 #include "ProjectBotSource/Weapons/PBMeleeWeaponTraceComponent.h"
 
+#include "MeleeSystem/PBMeleeCore.h"
+#include "Physics/LyraCollisionChannels.h"
+
 
 UPBMeleeWeaponTraceComponent::UPBMeleeWeaponTraceComponent(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
+	TraceChannel = Lyra_TraceChannel_Weapon;
 }
 
 void UPBMeleeWeaponTraceComponent::BeginPlay()
@@ -95,13 +99,13 @@ bool UPBMeleeWeaponTraceComponent::MeleeSweep(FHitResult& Hit, const TArray<FTra
 					return true;
 				}
 
-				if (URamaMeleeCore::MeleeSweep(
+				if (UPBMeleeCore::MeleeSweepByChannel(
 					this,
 					GetWorld(),
 					ActorsToIgnore,
 					Hit,
 					EachMeleeSweep,
-					FCollisionObjectQueryParams(MeleeTraceObjectTypes)
+					TraceChannel
 				)) {
 					//BroadCast
 					if (RamaMeleeWeapon_OnHit.IsBound())
@@ -143,13 +147,13 @@ bool UPBMeleeWeaponTraceComponent::MeleeSweep(FHitResult& Hit, const TArray<FTra
 		}
 		else
 		{
-			if (URamaMeleeCore::MeleeSweep(
+			if (UPBMeleeCore::MeleeSweepByChannel(
 				this,
 				GetWorld(),
 				Actor,
 				Hit,
 				EachMeleeSweep,
-				FCollisionObjectQueryParams(MeleeTraceObjectTypes)
+				TraceChannel
 			)) {
 				//BroadCast
 				if (RamaMeleeWeapon_OnHit.IsBound())

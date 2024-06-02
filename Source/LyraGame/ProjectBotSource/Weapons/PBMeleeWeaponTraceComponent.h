@@ -26,5 +26,8 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Rama Melee Weapon|PB")
 	FPBMeleeHitBatchedSignature PBMeleeWeapon_OnHitBatched;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Rama Melee Weapon|PB")
+	TEnumAsByte<ECollisionChannel> TraceChannel;
+
 	virtual bool MeleeSweep(FHitResult& Hit, const TArray<FTransform>& BodyPreviousPose) override;
 };
