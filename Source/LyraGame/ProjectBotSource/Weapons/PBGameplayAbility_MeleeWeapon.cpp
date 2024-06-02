@@ -105,7 +105,7 @@ void UPBGameplayAbility_MeleeWeapon::OnTargetDataReadyCallback(const FGameplayAb
 		// Take ownership of the target data to make sure no callbacks into game code invalidate it out from under us
 		FGameplayAbilityTargetDataHandle LocalTargetDataHandle(MoveTemp(const_cast<FGameplayAbilityTargetDataHandle&>(InData)));
 
-		const bool bShouldNotifyServer = CurrentActorInfo->IsLocallyControlled() && !CurrentActorInfo->IsNetAuthority();
+		const bool bShouldNotifyServer = CurrentActorInfo->IsLocallyControlled() && !CurrentActorInfo->IsNetAuthority() && (LocalTargetDataHandle.Num() > 0);
 		if (bShouldNotifyServer)
 		{
 			MyAbilityComponent->CallServerSetReplicatedTargetData(CurrentSpecHandle, CurrentActivationInfo.GetActivationPredictionKey(), LocalTargetDataHandle, ApplicationTag, MyAbilityComponent->ScopedPredictionKey);
@@ -253,11 +253,14 @@ void UPBGameplayAbility_MeleeWeapon::OnWeaponTickFinished(const TArray<FHitResul
 
 		for (const FHitResult& FoundHit : InHits)
 		{
-			FLyraGameplayAbilityTargetData_SingleTargetHit* NewTargetData = new FLyraGameplayAbilityTargetData_SingleTargetHit();
-			NewTargetData->HitResult = FoundHit;
-			NewTargetData->CartridgeID = CartridgeID;
+			if(FoundHit.GetActor() != GetAvatarActorFromActorInfo()) // Filter out owner pawn we hit this a lot during melee traces
+			{
+				FLyraGameplayAbilityTargetData_SingleTargetHit* NewTargetData = new FLyraGameplayAbilityTargetData_SingleTargetHit();
+				NewTargetData->HitResult = FoundHit;
+				NewTargetData->CartridgeID = CartridgeID;
 
-			TargetData.Add(NewTargetData);
+				TargetData.Add(NewTargetData);
+			}
 		}
 	}
 
