@@ -19,9 +19,12 @@
 #include "ProjectBotSource/Logs/PBLogChannels.h"
 #include "RamaMeleeWeapon.h"
 #include "Logging/StructuredLog.h"
+#include "ProjectBotSource/AbilitySystem/TargetData/PBTargetDataTypes.h"
 
 // Weapon fire will be blocked/canceled if the player has this tag
 //UE_DEFINE_GAMEPLAY_TAG_STATIC(TAG_PB_WeaponFireBlocked, "Ability.Weapon.NoFiring");
+UE_DEFINE_GAMEPLAY_TAG_STATIC(TAG_MeleeCombo, "Ability.Melee.Combo");
+
 
 
 UPBGameplayAbility_MeleeWeapon::UPBGameplayAbility_MeleeWeapon(const FObjectInitializer& ObjectInitializer)
@@ -52,7 +55,7 @@ bool UPBGameplayAbility_MeleeWeapon::CanActivateAbility(const FGameplayAbilitySp
 			bResult = false;
 		}
 	}
-
+	
 	return bResult;
 }
 
@@ -105,13 +108,22 @@ void UPBGameplayAbility_MeleeWeapon::OnTargetDataReadyCallback(const FGameplayAb
 		// Take ownership of the target data to make sure no callbacks into game code invalidate it out from under us
 		FGameplayAbilityTargetDataHandle LocalTargetDataHandle(MoveTemp(const_cast<FGameplayAbilityTargetDataHandle&>(InData)));
 
-		const bool bShouldNotifyServer = CurrentActorInfo->IsLocallyControlled() && !CurrentActorInfo->IsNetAuthority() && (LocalTargetDataHandle.Num() > 0);
+		const bool bShouldNotifyServer = CurrentActorInfo->IsLocallyControlled() && !CurrentActorInfo->IsNetAuthority();
 		if (bShouldNotifyServer)
 		{
 			MyAbilityComponent->CallServerSetReplicatedTargetData(CurrentSpecHandle, CurrentActivationInfo.GetActivationPredictionKey(), LocalTargetDataHandle, ApplicationTag, MyAbilityComponent->ScopedPredictionKey);
 		}
 
 		const bool bIsTargetDataValid = true;
+
+		//If we send target data with a combo tag we know that it's to input another attack rather than damage data. Treat it differently
+		if (FGameplayAbilityTargetData_PBMeleeInput* PBMeleeInput = static_cast<FGameplayAbilityTargetData_PBMeleeInput*>(LocalTargetDataHandle.Get(0)))
+		{
+			//Execute BP_HandleNewCombo
+			OnComboTargetDataReady(LocalTargetDataHandle);
+			MyAbilityComponent->ConsumeClientReplicatedTargetData(CurrentSpecHandle, CurrentActivationInfo.GetActivationPredictionKey());
+			return;
+		}
 
 #if WITH_SERVER_CODE
 		if (AController* Controller = GetControllerFromActorInfo())
@@ -237,11 +249,11 @@ void UPBGameplayAbility_MeleeWeapon::OnWeaponTickFinished(const TArray<FHitResul
 	UAbilitySystemComponent* MyAbilityComponent = CurrentActorInfo->AbilitySystemComponent.Get();
 	check(MyAbilityComponent);
 
+	FScopedPredictionWindow ScopedPrediction(MyAbilityComponent, CurrentActivationInfo.GetActivationPredictionKey());
+
 	AController* Controller = GetControllerFromActorInfo();
 	check(Controller);
 	ULyraWeaponStateComponent* WeaponStateComponent = Controller->FindComponentByClass<ULyraWeaponStateComponent>();
-
-	FScopedPredictionWindow ScopedPrediction(MyAbilityComponent, CurrentActivationInfo.GetActivationPredictionKey());
 
 	// Fill out the target data from the hit results
 	FGameplayAbilityTargetDataHandle TargetData;
@@ -264,11 +276,28 @@ void UPBGameplayAbility_MeleeWeapon::OnWeaponTickFinished(const TArray<FHitResul
 		}
 	}
 
-	// Send hit marker information
-	if (WeaponStateComponent != nullptr)
+	if(TargetData.Num() > 0)
 	{
-		WeaponStateComponent->AddUnconfirmedServerSideHitMarkers(TargetData, InHits);
+		// Send hit marker information
+		if (WeaponStateComponent != nullptr)
+		{
+			WeaponStateComponent->AddUnconfirmedServerSideHitMarkers(TargetData, InHits);
+		}
+
+		// Process the target data immediately
+		OnTargetDataReadyCallback(TargetData, FGameplayTag());
 	}
+}
+
+void UPBGameplayAbility_MeleeWeapon::StartAndSendNewComboData(uint8 Combo, float AttackAngle)
+{
+	FGameplayAbilityTargetDataHandle TargetDataHandle;
+	FGameplayAbilityTargetData_PBMeleeInput* TargetData = new FGameplayAbilityTargetData_PBMeleeInput(); //** USE OF new() IS **REQUIRED** **
+
+	TargetData->Combo = Combo;
+	TargetData->AttackAngle = AttackAngle;
+
+	TargetDataHandle.Add(TargetData);
 
 	// Process the target data immediately
 	OnTargetDataReadyCallback(TargetData, FGameplayTag());

@@ -61,6 +61,13 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnMeleeWeaponTargetDataReady(const FGameplayAbilityTargetDataHandle& TargetData);
 
+	// Called when target data is ready
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnComboTargetDataReady(const FGameplayAbilityTargetDataHandle& TargetData);
+
+	UFUNCTION(BlueprintCallable)
+	void StartAndSendNewComboData(uint8 Combo, float AttackAngle);
+
 private:
 	FDelegateHandle OnTargetDataReadyCallbackDelegateHandle;
 
