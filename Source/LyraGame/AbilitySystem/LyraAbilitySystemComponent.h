@@ -103,4 +103,10 @@ protected:
 
 	// Number of abilities running in each activation group.
 	int32 ActivationGroupCounts[(uint8)ELyraAbilityActivationGroup::MAX];
+
+public:
+	UFUNCTION(BlueprintCallable, Category = "Abilities")
+	virtual bool BatchRPCTryActivateAbility(FGameplayAbilitySpecHandle InAbilityHandle);
+
+	virtual bool ShouldDoServerAbilityRPCBatch() const { return true; }
 };

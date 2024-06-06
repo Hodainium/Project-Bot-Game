@@ -9,6 +9,7 @@
 #include "GameFramework/Pawn.h"
 #include "LyraGlobalAbilitySystem.h"
 #include "LyraLogChannels.h"
+#include "Logging/StructuredLog.h"
 #include "System/LyraAssetManager.h"
 #include "System/LyraGameData.h"
 
@@ -229,8 +230,13 @@ void ULyraAbilitySystemComponent::ProcessAbilityInput(float DeltaTime, bool bGam
 		return;
 	}
 
-	static TArray<FGameplayAbilitySpecHandle> AbilitiesToActivate;
-	AbilitiesToActivate.Reset();
+	//static TArray<FGameplayAbilitySpecHandle> AbilitiesToActivate;
+
+	//I am going to use the tmap instead.
+	static TMap<FGameplayAbilitySpecHandle, bool> AbilitySpecsToActivateMap;
+
+	//AbilitiesToActivate.Reset();
+	AbilitySpecsToActivateMap.Reset();
 
 	//@TODO: See if we can use FScopedServerAbilityRPCBatcher ScopedRPCBatcher in some of these loops
 
@@ -246,7 +252,8 @@ void ULyraAbilitySystemComponent::ProcessAbilityInput(float DeltaTime, bool bGam
 				const ULyraGameplayAbility* LyraAbilityCDO = Cast<ULyraGameplayAbility>(AbilitySpec->Ability);
 				if (LyraAbilityCDO && LyraAbilityCDO->GetActivationPolicy() == ELyraAbilityActivationPolicy::WhileInputActive)
 				{
-					AbilitiesToActivate.AddUnique(AbilitySpec->Handle);
+					//AbilitiesToActivate.AddUnique(AbilitySpec->Handle);
+					AbilitySpecsToActivateMap.FindOrAdd(AbilitySpec->Handle, LyraAbilityCDO->bTryToBatch);
 				}
 			}
 		}
@@ -274,7 +281,8 @@ void ULyraAbilitySystemComponent::ProcessAbilityInput(float DeltaTime, bool bGam
 
 					if (LyraAbilityCDO && LyraAbilityCDO->GetActivationPolicy() == ELyraAbilityActivationPolicy::OnInputTriggered)
 					{
-						AbilitiesToActivate.AddUnique(AbilitySpec->Handle);
+						//AbilitiesToActivate.AddUnique(AbilitySpec->Handle);
+						AbilitySpecsToActivateMap.FindOrAdd(AbilitySpec->Handle, LyraAbilityCDO->bTryToBatch);
 					}
 				}
 			}
@@ -286,9 +294,22 @@ void ULyraAbilitySystemComponent::ProcessAbilityInput(float DeltaTime, bool bGam
 	// We do it all at once so that held inputs don't activate the ability
 	// and then also send a input event to the ability because of the press.
 	//
-	for (const FGameplayAbilitySpecHandle& AbilitySpecHandle : AbilitiesToActivate)
+	/*for (const FGameplayAbilitySpecHandle& AbilitySpecHandle : AbilitiesToActivate)
 	{
 		TryActivateAbility(AbilitySpecHandle);
+	}*/
+
+	for (const auto& AbilityPair : AbilitySpecsToActivateMap)  
+	{
+		if(AbilityPair.Value)
+		{
+			BatchRPCTryActivateAbility(AbilityPair.Key);
+			//TryActivateAbility(AbilityPair.Key);
+		}
+		else
+		{
+			TryActivateAbility(AbilityPair.Key);
+		}
 	}
 
 	//
@@ -410,6 +431,21 @@ void ULyraAbilitySystemComponent::HandleAbilityFailed(const UGameplayAbility* Ab
 	{
 		LyraAbility->OnAbilityFailedToActivate(FailureReason);
 	}	
+}
+
+bool ULyraAbilitySystemComponent::BatchRPCTryActivateAbility(FGameplayAbilitySpecHandle InAbilityHandle)
+{
+	bool AbilityActivated = false;
+	if (InAbilityHandle.IsValid())
+	{
+		FScopedServerAbilityRPCBatcher AbilityRPCBatcher(this, InAbilityHandle);
+
+		AbilityActivated = TryActivateAbility(InAbilityHandle);
+
+		UE_LOG(LogLyraAbilitySystem, Warning, TEXT("Tried to batch ability, [%s]."), *InAbilityHandle.ToString());
+	}
+
+	return AbilityActivated;
 }
 
 bool ULyraAbilitySystemComponent::IsActivationGroupBlocked(ELyraAbilityActivationGroup Group) const

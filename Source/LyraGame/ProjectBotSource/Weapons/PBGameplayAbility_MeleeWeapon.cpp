@@ -120,7 +120,7 @@ void UPBGameplayAbility_MeleeWeapon::OnTargetDataReadyCallback(const FGameplayAb
 		if (FGameplayAbilityTargetData_PBMeleeInput* PBMeleeInput = static_cast<FGameplayAbilityTargetData_PBMeleeInput*>(LocalTargetDataHandle.Get(0)))
 		{
 			//Execute BP_HandleNewCombo
-			OnComboTargetDataReady(LocalTargetDataHandle);
+			OnComboTargetDataReady(PBMeleeInput->Combo, PBMeleeInput->AttackAngle);
 			MyAbilityComponent->ConsumeClientReplicatedTargetData(CurrentSpecHandle, CurrentActivationInfo.GetActivationPredictionKey());
 			return;
 		}
@@ -289,7 +289,7 @@ void UPBGameplayAbility_MeleeWeapon::OnWeaponTickFinished(const TArray<FHitResul
 	}
 }
 
-void UPBGameplayAbility_MeleeWeapon::StartAndSendNewComboData(uint8 Combo, float AttackAngle)
+void UPBGameplayAbility_MeleeWeapon::SetComboAttackTargetData(uint8 Combo, float AttackAngle)
 {
 	FGameplayAbilityTargetDataHandle TargetDataHandle;
 	FGameplayAbilityTargetData_PBMeleeInput* TargetData = new FGameplayAbilityTargetData_PBMeleeInput(); //** USE OF new() IS **REQUIRED** **
@@ -300,5 +300,5 @@ void UPBGameplayAbility_MeleeWeapon::StartAndSendNewComboData(uint8 Combo, float
 	TargetDataHandle.Add(TargetData);
 
 	// Process the target data immediately
-	OnTargetDataReadyCallback(TargetData, FGameplayTag());
+	OnTargetDataReadyCallback(TargetDataHandle, FGameplayTag());
 }

@@ -192,6 +192,10 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Lyra|Ability Activation")
 	ELyraAbilityActivationGroup ActivationGroup;
 
+	// If true, will attempt to batch this ability when it is activated in the lyraASC
+	UPROPERTY(EditDefaultsOnly, Category = "ProjectBot|Advanced")
+	bool bTryToBatch;
+
 	// Additional costs that must be paid to activate this ability
 	UPROPERTY(EditDefaultsOnly, Instanced, Category = Costs)
 	TArray<TObjectPtr<ULyraAbilityCost>> AdditionalCosts;
