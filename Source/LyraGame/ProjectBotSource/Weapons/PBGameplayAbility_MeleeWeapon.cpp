@@ -117,8 +117,10 @@ void UPBGameplayAbility_MeleeWeapon::OnTargetDataReadyCallback(const FGameplayAb
 		const bool bIsTargetDataValid = true;
 
 		//If we send target data with a combo tag we know that it's to input another attack rather than damage data. Treat it differently
-		if (FGameplayAbilityTargetData_PBMeleeInput* PBMeleeInput = static_cast<FGameplayAbilityTargetData_PBMeleeInput*>(LocalTargetDataHandle.Get(0)))
+		if (LocalTargetDataHandle.Get(0)->GetScriptStruct() == FGameplayAbilityTargetData_PBMeleeInput::StaticStruct())
 		{
+			FGameplayAbilityTargetData_PBMeleeInput* PBMeleeInput = static_cast<FGameplayAbilityTargetData_PBMeleeInput*>(LocalTargetDataHandle.Get(0));
+
 			//Execute BP_HandleNewCombo
 			OnComboTargetDataReady(PBMeleeInput->Combo, PBMeleeInput->AttackAngle);
 			MyAbilityComponent->ConsumeClientReplicatedTargetData(CurrentSpecHandle, CurrentActivationInfo.GetActivationPredictionKey());
