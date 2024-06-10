@@ -10,6 +10,7 @@
 #include "AbilitySystem/Attributes/LyraCombatSet.h"
 #include "Character/LyraHealthComponent.h"
 #include "Logging/StructuredLog.h"
+#include "ProjectBotSource/AbilitySystem/Attributes/PBHealthSet.h"
 #include "ProjectBotSource/LockOnSystem/LockOnSystemTargetComponent.h"
 
 
@@ -17,7 +18,7 @@ APBActorWithAbilitiesAndHealth::APBActorWithAbilitiesAndHealth(const FObjectInit
 	: Super(ObjectInitializer)
 {
 	CombatSet = CreateDefaultSubobject<ULyraCombatSet>("CombatSet");
-	HealthSet = CreateDefaultSubobject<ULyraHealthSet>("HealthSet");
+	HealthSet = CreateDefaultSubobject<UPBHealthSet>("HealthSet");
 
 	TargetComponent = CreateDefaultSubobject<ULockOnSystemTargetComponent>("TargetComponent");
 

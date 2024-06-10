@@ -11,6 +11,7 @@
 #include "ProjectBotSource/LockOnSystem/LockOnSystemTargetableInterface.h"
 #include "PBActorWithAbilitiesAndHealth.generated.h"
 
+class UPBHealthSet;
 class ULockOnSystemTargetComponent;
 class ULyraCombatSet;
 class ULyraHealthSet;
@@ -74,7 +75,7 @@ protected:
 	 * attributes to this one.
 	 */
 	UPROPERTY(BlueprintReadOnly, Category = "PB|Ability")
-	TObjectPtr<ULyraHealthSet> HealthSet;
+	TObjectPtr<UPBHealthSet> HealthSet;
 
 	/**
 	 * Lyra "Health Component" is a convenience interface for HealthSet
