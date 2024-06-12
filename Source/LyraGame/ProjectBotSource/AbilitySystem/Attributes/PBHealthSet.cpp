@@ -38,21 +38,36 @@ void UPBHealthSet::PostGameplayEffectExecute(const FGameplayEffectModCallbackDat
 
 		FGameplayAbilityTargetData_SingleTargetHit* NewTargetData = new FGameplayAbilityTargetData_SingleTargetHit();
 
+		FGameplayAbilityTargetData_LocationInfo* LocationInfo = new FGameplayAbilityTargetData_LocationInfo();
+
+
 		if(FHitResult* HitResult = TypedContext->GetHitResult())
 		{
 			NewTargetData->HitResult = *HitResult;
 		}
 
-		TargetDataHandle.Add(NewTargetData);
+		FVector InstigatorLocation = TypedContext->GetEffectCauser()->GetActorLocation();
+		FVector TargetLocation = Data.Target.GetAvatarActor()->GetActorLocation();
+
+		// make 70 Data.EvaluatedData.Magnitude 
+		FVector KnockbackDestination = TargetLocation + (TargetLocation - InstigatorLocation).GetSafeNormal2D() * 70;
+
+		LocationInfo->TargetLocation.LiteralTransform.SetTranslation(KnockbackDestination);
+
+		//TargetDataHandle.Add(NewTargetData);
+		TargetDataHandle.Add(LocationInfo);
+
 
 		Payload.EventTag = PB_GameplayEvent_Tags::TAG_GAMEPLAYEVENT_KNOCKBACK;
 		Payload.Instigator = TypedContext->GetEffectCauser();  //GetInstigator();
-		Payload.Target = Data.Target.GetAvatarActor();
-		Payload.OptionalObject = Data.EffectSpec.Def;
-		Payload.ContextHandle = Data.EffectSpec.GetEffectContext();
-		Payload.InstigatorTags = *Data.EffectSpec.CapturedSourceTags.GetAggregatedTags();
-		Payload.TargetTags = *Data.EffectSpec.CapturedTargetTags.GetAggregatedTags();
-		Payload.EventMagnitude = Data.EvaluatedData.Magnitude;
+		//Payload.Target = Data.Target.GetAvatarActor();
+		//Payload.OptionalObject = Data.EffectSpec.Def;
+		//Payload.ContextHandle = Data.EffectSpec.GetEffectContext();
+
+		//Payload.InstigatorTags = *Data.EffectSpec.CapturedSourceTags.GetAggregatedTags();
+		//Payload.TargetTags = *Data.EffectSpec.CapturedTargetTags.GetAggregatedTags();
+
+		//Payload.EventMagnitude = Data.EvaluatedData.Magnitude;
 		Payload.TargetData = TargetDataHandle;
 
 		//FScopedPredictionWindow NewScopedWindow(GetOwningAbilitySystemComponent(), true);
