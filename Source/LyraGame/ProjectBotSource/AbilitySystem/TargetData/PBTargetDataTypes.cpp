@@ -12,3 +12,10 @@ bool FGameplayAbilityTargetData_PBMeleeInput::NetSerialize(FArchive& Ar, UPackag
 	bOutSuccess = true;
 	return true;
 }
+
+bool FPBGameplayAbilityTargetData_MeleeHit::NetSerialize(FArchive& Ar, UPackageMap* Map, bool& bOutSuccess)
+{
+	FGameplayAbilityTargetData_SingleTargetHit::NetSerialize(Ar, Map, bOutSuccess);
+	Ar << Combo;
+	return true;
+}

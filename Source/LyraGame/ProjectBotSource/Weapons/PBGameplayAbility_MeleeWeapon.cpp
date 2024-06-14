@@ -33,6 +33,7 @@ UPBGameplayAbility_MeleeWeapon::UPBGameplayAbility_MeleeWeapon(const FObjectInit
 	//SourceBlockedTags.AddTag(TAG_PB_WeaponFireBlocked);
 	//TargettingSource = EPBAbilityTargetingSource::CameraTowardsFocus;
 	IsTracing = false;
+	CurrentCombo = 0;
 }
 
 UPBMeleeWeaponInstance* UPBGameplayAbility_MeleeWeapon::GetMeleeWeaponInstance() const
@@ -116,8 +117,10 @@ void UPBGameplayAbility_MeleeWeapon::OnTargetDataReadyCallback(const FGameplayAb
 
 		const bool bIsTargetDataValid = true;
 
+		FGameplayAbilityTargetData* DataToCheck = LocalTargetDataHandle.Get(0); //TODO Use this to check nullptr
+
 		//If we send target data with a combo tag we know that it's to input another attack rather than damage data. Treat it differently
-		if (LocalTargetDataHandle.Get(0)->GetScriptStruct() == FGameplayAbilityTargetData_PBMeleeInput::StaticStruct())
+		if (DataToCheck != nullptr && DataToCheck->GetScriptStruct() == FGameplayAbilityTargetData_PBMeleeInput::StaticStruct())
 		{
 			FGameplayAbilityTargetData_PBMeleeInput* PBMeleeInput = static_cast<FGameplayAbilityTargetData_PBMeleeInput*>(LocalTargetDataHandle.Get(0));
 
@@ -138,7 +141,7 @@ void UPBGameplayAbility_MeleeWeapon::OnTargetDataReadyCallback(const FGameplayAb
 					TArray<uint8> HitReplaces;
 					for (uint8 i = 0; (i < LocalTargetDataHandle.Num()) && (i < 255); ++i)
 					{
-						if (FGameplayAbilityTargetData_SingleTargetHit* SingleTargetHit = static_cast<FGameplayAbilityTargetData_SingleTargetHit*>(LocalTargetDataHandle.Get(i)))
+						if (FPBGameplayAbilityTargetData_MeleeHit* SingleTargetHit = static_cast<FPBGameplayAbilityTargetData_MeleeHit*>(LocalTargetDataHandle.Get(i)))
 						{
 							if (SingleTargetHit->bHitReplaced)
 							{
@@ -263,15 +266,13 @@ void UPBGameplayAbility_MeleeWeapon::OnWeaponTickFinished(const TArray<FHitResul
 
 	if (InHits.Num() > 0)
 	{
-		const int32 CartridgeID = FMath::Rand();
-
 		for (const FHitResult& FoundHit : InHits)
 		{
 			if(FoundHit.GetActor() != GetAvatarActorFromActorInfo()) // Filter out owner pawn we hit this a lot during melee traces
 			{
-				FLyraGameplayAbilityTargetData_SingleTargetHit* NewTargetData = new FLyraGameplayAbilityTargetData_SingleTargetHit();
+				FPBGameplayAbilityTargetData_MeleeHit* NewTargetData = new FPBGameplayAbilityTargetData_MeleeHit();
 				NewTargetData->HitResult = FoundHit;
-				NewTargetData->CartridgeID = CartridgeID;
+				NewTargetData->Combo = CurrentCombo;
 
 				TargetData.Add(NewTargetData);
 			}

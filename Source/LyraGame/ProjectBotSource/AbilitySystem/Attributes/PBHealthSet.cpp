@@ -36,21 +36,20 @@ void UPBHealthSet::PostGameplayEffectExecute(const FGameplayEffectModCallbackDat
 
 		FGameplayAbilityTargetDataHandle TargetDataHandle;
 
-		FGameplayAbilityTargetData_SingleTargetHit* NewTargetData = new FGameplayAbilityTargetData_SingleTargetHit();
-
 		FGameplayAbilityTargetData_LocationInfo* LocationInfo = new FGameplayAbilityTargetData_LocationInfo();
 
+		/*FGameplayAbilityTargetData_SingleTargetHit* NewTargetData = new FGameplayAbilityTargetData_SingleTargetHit();
 
 		if(FHitResult* HitResult = TypedContext->GetHitResult())
 		{
 			NewTargetData->HitResult = *HitResult;
-		}
+		}*/
 
 		FVector InstigatorLocation = TypedContext->GetEffectCauser()->GetActorLocation();
 		FVector TargetLocation = Data.Target.GetAvatarActor()->GetActorLocation();
 
 		// make 70 Data.EvaluatedData.Magnitude 
-		FVector KnockbackDestination = TargetLocation + (TargetLocation - InstigatorLocation).GetSafeNormal2D() * 70;
+		FVector KnockbackDestination = TargetLocation + (TargetLocation - InstigatorLocation).GetSafeNormal2D() * Data.EvaluatedData.Magnitude; //70
 
 		LocationInfo->TargetLocation.LiteralTransform.SetTranslation(KnockbackDestination);
 
@@ -67,11 +66,13 @@ void UPBHealthSet::PostGameplayEffectExecute(const FGameplayEffectModCallbackDat
 		//Payload.InstigatorTags = *Data.EffectSpec.CapturedSourceTags.GetAggregatedTags();
 		//Payload.TargetTags = *Data.EffectSpec.CapturedTargetTags.GetAggregatedTags();
 
-		//Payload.EventMagnitude = Data.EvaluatedData.Magnitude;
+		//Payload.EventMagnitude = Data.EvaluatedData.Magnitude; //Should be used to pick which attack level
 		Payload.TargetData = TargetDataHandle;
 
 		//FScopedPredictionWindow NewScopedWindow(GetOwningAbilitySystemComponent(), true);
 		GetOwningAbilitySystemComponent()->HandleGameplayEvent(Payload.EventTag, &Payload);
+
+		UE_LOGFMT(LogPBGame, Warning, "Knockback in att set= {0}", Data.EvaluatedData.Magnitude);
 
 		SetKnockback(0.0f);
 	}

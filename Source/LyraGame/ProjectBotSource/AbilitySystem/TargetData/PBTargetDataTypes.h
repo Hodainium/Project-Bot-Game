@@ -46,3 +46,39 @@ struct TStructOpsTypeTraits<FGameplayAbilityTargetData_PBMeleeInput> : public TS
 		WithNetSerializer = true	// For now this is REQUIRED for FGameplayAbilityTargetDataHandle net serialization to work
 	};
 };
+
+
+
+/** Target data with just a source and target location in space */
+USTRUCT(BlueprintType)
+struct FPBGameplayAbilityTargetData_MeleeHit : public FGameplayAbilityTargetData_SingleTargetHit
+{
+	GENERATED_USTRUCT_BODY()
+
+	/** Combo number */
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = Targeting)
+	uint8 Combo;
+
+	// -------------------------------------
+
+	virtual UScriptStruct* GetScriptStruct() const override
+	{
+		return FPBGameplayAbilityTargetData_MeleeHit::StaticStruct();
+	}
+
+	virtual FString ToString() const override
+	{
+		return TEXT("FPBGameplayAbilityTargetData_MeleeHit");
+	}
+
+	bool NetSerialize(FArchive& Ar, class UPackageMap* Map, bool& bOutSuccess);
+};
+
+template<>
+struct TStructOpsTypeTraits<FPBGameplayAbilityTargetData_MeleeHit> : public TStructOpsTypeTraitsBase2<FPBGameplayAbilityTargetData_MeleeHit>
+{
+	enum
+	{
+		WithNetSerializer = true	// For now this is REQUIRED for FGameplayAbilityTargetDataHandle net serialization to work
+	};
+};

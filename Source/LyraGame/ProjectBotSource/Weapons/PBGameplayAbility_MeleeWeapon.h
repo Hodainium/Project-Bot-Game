@@ -69,6 +69,9 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void SetComboAttackTargetData(uint8 Combo, float AttackAngle);
 
+	UPROPERTY(BlueprintReadWrite)
+	int CurrentCombo;
+
 private:
 	FDelegateHandle OnTargetDataReadyCallbackDelegateHandle;
 
