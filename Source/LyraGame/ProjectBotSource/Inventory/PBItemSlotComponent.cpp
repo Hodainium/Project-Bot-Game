@@ -185,6 +185,11 @@ void UPBItemSlotComponent::Server_SwapSlots_Implementation(FPBInventorySlotIndex
 
 	if (SourceSlots.SlotArray.IsValidIndex(SourceIndex.SlotIndex) && TargetSlots.SlotArray.IsValidIndex(TargetIndex.SlotIndex))
 	{
+		if(TargetSlots.SlotArray[TargetIndex.SlotIndex] == nullptr && SourceSlots.SlotArray[SourceIndex.SlotIndex] == nullptr)
+		{
+			Client_SwapSlots(false);
+		}
+
 		UPBInventoryItemInstance* TempInstance = TargetSlots.SlotArray[TargetIndex.SlotIndex];
 
 		TargetSlots.SlotArray[TargetIndex.SlotIndex] = SourceSlots.SlotArray[SourceIndex.SlotIndex];
