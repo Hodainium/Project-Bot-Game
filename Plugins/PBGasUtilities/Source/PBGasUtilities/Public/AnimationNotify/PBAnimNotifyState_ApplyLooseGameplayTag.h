@@ -30,4 +30,21 @@ public:
 protected:
 	UPROPERTY(EditAnywhere, Category=GameplayTags)
 	FGameplayTagContainer GameplayTagsToApply;
+
+	UPROPERTY(EditAnywhere, Category = GameplayTags)
+	bool RemoveTagsOnBlendOut;
+
+private:
+	//This is used so that we can remove tags on onblendingout
+	TWeakObjectPtr<AActor> CachedOwningActor;
+
+	//This is used so that we can ensure that this montage is blending out in onblendingout
+	TWeakObjectPtr<const UAnimMontage> CachedMontage;
+
+	//A flag that indicates whether the tags are currently applied. Necessary because there are two ways the tags cna be removed.
+	UPROPERTY(Transient)
+	bool TagsAreApplied;
+
+	UFUNCTION()
+	void OnMontageBlendingOut(UAnimMontage* Montage, bool bInterrupted);
 };

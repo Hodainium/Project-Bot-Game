@@ -436,6 +436,10 @@ void ULyraAbilitySystemComponent::OnTagUpdated(const FGameplayTag& Tag, bool Tag
 	{
 		OwningChar->GetCharacterMovement()->bIgnoreClientMovementErrorChecksAndCorrection = TagExists;
 	}
+	else if (Tag == PB_MovementSetting_Tags::TAG_MOVEMENT_SETTING_ALLOWROTATIONDURINGROOTMOTION)
+	{
+		OwningChar->GetCharacterMovement()->bAllowPhysicsRotationDuringAnimRootMotion = TagExists;
+	}
 	//else if (Tag == PB_MovementSetting_Tags::TAG_MOVEMENT_SETTING_LOCKMOVEINPUT)
 	//{
 	//	//OwningChar->GetCharacterMovement()->bIgnoreClientMovementErrorChecksAndCorrection = TagExists;

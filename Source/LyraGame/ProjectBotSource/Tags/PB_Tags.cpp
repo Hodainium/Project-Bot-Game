@@ -105,6 +105,8 @@ namespace PB_MovementSetting_Tags
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_MOVEMENT_SETTING_ORIENTTOMOVEMENT, "Movement.Setting.RotationFollowMovement", "Character rotation follows movement");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_MOVEMENT_SETTING_FOLLOWMOVEINPUT, "Movement.Setting.RotationFollowMoveInput", "Character rotation follows moveinput");
 
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_MOVEMENT_SETTING_ALLOWROTATIONDURINGROOTMOTION, "Movement.Setting.AllowRotationDuringRootMotion", "Enable Character rotation during root motion");
+
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_MOVEMENT_SETTING_LOCKMOVEMENT, "Movement.Setting.LockMovement", "Locks character movement");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_MOVEMENT_SETTING_LOCKMOVEINPUT, "Movement.Setting.LockMoveInput", "Locks character moveinput");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_MOVEMENT_SETTING_LOCKROTATION, "Movement.Setting.LockRotation", "Locks character rotation");

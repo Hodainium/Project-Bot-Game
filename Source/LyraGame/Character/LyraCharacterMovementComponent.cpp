@@ -7,6 +7,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Engine/World.h"
 #include "GameFramework/Character.h"
+#include "ProjectBotSource/Tags/PB_Tags.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(LyraCharacterMovementComponent)
 
@@ -112,6 +113,11 @@ FRotator ULyraCharacterMovementComponent::GetDeltaRotation(float DeltaTime) cons
 		{
 			return FRotator(0,0,0);
 		}
+
+		if (ASC->HasMatchingGameplayTag(PB_MovementSetting_Tags::TAG_MOVEMENT_SETTING_LOCKROTATION))
+		{
+			return FRotator(0, 0, 0);
+		}
 	}
 
 	return Super::GetDeltaRotation(DeltaTime);
@@ -122,6 +128,11 @@ float ULyraCharacterMovementComponent::GetMaxSpeed() const
 	if (UAbilitySystemComponent* ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(GetOwner()))
 	{
 		if (ASC->HasMatchingGameplayTag(TAG_Gameplay_MovementStopped))
+		{
+			return 0;
+		}
+
+		if (ASC->HasMatchingGameplayTag(PB_MovementSetting_Tags::TAG_MOVEMENT_SETTING_LOCKMOVEMENT))
 		{
 			return 0;
 		}
