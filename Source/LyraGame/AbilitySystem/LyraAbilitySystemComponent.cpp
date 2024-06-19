@@ -9,7 +9,10 @@
 #include "GameFramework/Pawn.h"
 #include "LyraGlobalAbilitySystem.h"
 #include "LyraLogChannels.h"
+#include "Character/LyraCharacter.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Logging/StructuredLog.h"
+#include "ProjectBotSource/Tags/PB_Tags.h"
 #include "System/LyraAssetManager.h"
 #include "System/LyraGameData.h"
 
@@ -403,6 +406,40 @@ void ULyraAbilitySystemComponent::HandleChangeAbilityCanBeCanceled(const FGamepl
 	Super::HandleChangeAbilityCanBeCanceled(AbilityTags, RequestingAbility, bCanBeCanceled);
 
 	//@TODO: Apply any special logic like blocking input or movement
+}
+
+void ULyraAbilitySystemComponent::OnTagUpdated(const FGameplayTag& Tag, bool TagExists)
+{
+	Super::OnTagUpdated(Tag, TagExists);
+
+	ALyraCharacter* OwningChar = Cast<ALyraCharacter>(GetAvatarActor());
+
+	if(!OwningChar)
+	{
+		return;
+	}
+
+	if(Tag == PB_MovementSetting_Tags::TAG_MOVEMENT_SETTING_USECONTROLLERROTATION)
+	{
+		//OwningChar->GetCharacterMovement()->bUseControllerDesiredRotation = TagExists;
+		OwningChar->bUseControllerRotationYaw = TagExists;
+	}
+	else if(Tag == PB_MovementSetting_Tags::TAG_MOVEMENT_SETTING_ORIENTTOMOVEMENT)
+	{
+		OwningChar->GetCharacterMovement()->bOrientRotationToMovement = TagExists;
+	}
+	else if (Tag == PB_MovementSetting_Tags::TAG_MOVEMENT_SETTING_ACCEPTCLIENTPOSITION)
+	{
+		OwningChar->GetCharacterMovement()->bServerAcceptClientAuthoritativePosition = TagExists;
+	}
+	else if (Tag == PB_MovementSetting_Tags::TAG_MOVEMENT_SETTING_IGNOREMOVEMENTCHECK)
+	{
+		OwningChar->GetCharacterMovement()->bIgnoreClientMovementErrorChecksAndCorrection = TagExists;
+	}
+	//else if (Tag == PB_MovementSetting_Tags::TAG_MOVEMENT_SETTING_LOCKMOVEINPUT)
+	//{
+	//	//OwningChar->GetCharacterMovement()->bIgnoreClientMovementErrorChecksAndCorrection = TagExists;
+	//}
 }
 
 void ULyraAbilitySystemComponent::GetAdditionalActivationTagRequirements(const FGameplayTagContainer& AbilityTags, FGameplayTagContainer& OutActivationRequired, FGameplayTagContainer& OutActivationBlocked) const

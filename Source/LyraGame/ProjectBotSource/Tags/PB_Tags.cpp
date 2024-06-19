@@ -98,6 +98,21 @@ namespace PB_MovementMode_Tags
 	};
 }
 
+namespace PB_MovementSetting_Tags
+{
+	// These are mapped to the movement modes inside GetMovementModeTagMap()
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_MOVEMENT_SETTING_USECONTROLLERROTATION, "Movement.Setting.RotationFollowController", "Character rotation follows controller");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_MOVEMENT_SETTING_ORIENTTOMOVEMENT, "Movement.Setting.RotationFollowMovement", "Character rotation follows movement");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_MOVEMENT_SETTING_FOLLOWMOVEINPUT, "Movement.Setting.RotationFollowMoveInput", "Character rotation follows moveinput");
+
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_MOVEMENT_SETTING_LOCKMOVEMENT, "Movement.Setting.LockMovement", "Locks character movement");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_MOVEMENT_SETTING_LOCKMOVEINPUT, "Movement.Setting.LockMoveInput", "Locks character moveinput");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_MOVEMENT_SETTING_LOCKROTATION, "Movement.Setting.LockRotation", "Locks character rotation");
+
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_MOVEMENT_SETTING_ACCEPTCLIENTPOSITION, "Movement.Setting.AcceptClientPosition", "Sets CMC->bServerAcceptClientAuthoritativePosition");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_MOVEMENT_SETTING_IGNOREMOVEMENTCHECK, "Movement.Setting.IgnoreMovementCheck", "Sets CMC->bIgnoreClientMovementErrorChecksAndCorrection");
+}
+
 namespace PB_Movement_Tags
 {
 	UE_DEFINE_GAMEPLAY_TAG(TAG_GAMEPLAY_MOVEMENTSTOPPED, "Movement.Modifier.MovementStopped");
