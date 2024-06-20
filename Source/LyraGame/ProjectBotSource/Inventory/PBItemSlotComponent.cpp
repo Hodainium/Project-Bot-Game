@@ -397,8 +397,9 @@ void UPBItemSlotComponent::EquipItemInSlot(EPBInventorySlotType SlotType)
 		switch (DefItemType)
 		{
 		case EPBItemType::Weapon:
+		case EPBItemType::Consumable:
 		{
-			if (UPBWeaponItemDefinition* ItemDef = Cast<UPBWeaponItemDefinition>(SlotItem->GetItemDefinition()))
+			if (UPBEquippableItem* ItemDef = Cast<UPBEquippableItem>(SlotItem->GetItemDefinition()))
 			{
 				if (UPBEquipmentManagerComponent* EquipmentManager = FindEquipmentComponent())
 				{

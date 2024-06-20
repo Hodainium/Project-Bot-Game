@@ -26,6 +26,6 @@ public:
 
 protected:
 	/** Equipment to grant and equip */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Weapon)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Equipment)
 	TObjectPtr<UPBEquipmentDefinition> EquipmentDefinition;
 };
