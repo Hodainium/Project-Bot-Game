@@ -32,11 +32,14 @@ void UPBItemSlotComponent::BeginPlay()
 		SetNumSlotsForEnum(EPBInventorySlotType::Weapon_R, WeaponRStartingSlots);
 		SetNumSlotsForEnum(EPBInventorySlotType::Temporary, TemporaryStartingSlots);
 		SetNumSlotsForEnum(EPBInventorySlotType::UseItem, UseItemStartingSlots);
+		SetNumSlotsForEnum(EPBInventorySlotType::Consumable, ConsumableStartingSlots);
+
 
 		SetActiveSlotIndexForEnum(EPBInventorySlotType::Weapon_L, -1);
 		SetActiveSlotIndexForEnum(EPBInventorySlotType::Weapon_R, -1);
 		SetActiveSlotIndexForEnum(EPBInventorySlotType::Temporary, -1);
 		SetActiveSlotIndexForEnum(EPBInventorySlotType::UseItem, -1);
+		SetActiveSlotIndexForEnum(EPBInventorySlotType::Consumable, -1);
 	}
 }
 
@@ -365,6 +368,7 @@ void UPBItemSlotComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 	DOREPLIFETIME(ThisClass, SlotStruct_Weapon_R);
 	DOREPLIFETIME(ThisClass, SlotStruct_Temporary);
 	DOREPLIFETIME(ThisClass, SlotStruct_UseItem);
+	DOREPLIFETIME(ThisClass, SlotStruct_Consumable);
 	DOREPLIFETIME(ThisClass, NullEquipmentStack);
 }
 
@@ -636,6 +640,24 @@ void UPBItemSlotComponent::OnRep_SlotStruct_UseItem(FPBInventorySlotStruct& Prev
 	}
 }
 
+void UPBItemSlotComponent::OnRep_SlotStruct_Consumable(FPBInventorySlotStruct& PreviousValue)
+{
+	if (SlotStruct_Temporary.SlotArray != PreviousValue.SlotArray)
+	{
+		Handle_OnRep_SlotsChanged(EPBInventorySlotType::Consumable, PreviousValue);
+	}
+
+	if (SlotStruct_Temporary.NumSlots != PreviousValue.NumSlots)
+	{
+		Handle_OnRep_NumSlotsChanged(EPBInventorySlotType::Consumable, PreviousValue);
+	}
+
+	if (SlotStruct_Temporary.ActiveSlotIndex != PreviousValue.ActiveSlotIndex)
+	{
+		Handle_OnRep_ActiveSlotIndexChanged(EPBInventorySlotType::Consumable, PreviousValue);
+	}
+}
+
 void UPBItemSlotComponent::AddNullEquipment(UPBWeaponItemDefinition* InEquipment)
 {
 	bool bFound = false;
@@ -685,6 +707,8 @@ FPBInventorySlotStruct& UPBItemSlotComponent::GetSlotStructForEnum(EPBInventoryS
 		return SlotStruct_Temporary;
 	case EPBInventorySlotType::UseItem:
 		return SlotStruct_UseItem;
+	case EPBInventorySlotType::Consumable:
+		return SlotStruct_Consumable;
 	default:
 		{
 			ensureMsgf(false, TEXT("Invalid enum in getslotstruct invcomp nonconst"));
@@ -707,6 +731,8 @@ const FPBInventorySlotStruct& UPBItemSlotComponent::GetSlotStructForEnum_Const(E
 		return SlotStruct_Temporary;
 	case EPBInventorySlotType::UseItem:
 		return SlotStruct_UseItem;
+	case EPBInventorySlotType::Consumable:
+		return SlotStruct_Consumable;
 	default:
 	{
 		FDebug::DumpStackTraceToLog(ELogVerbosity::Error);

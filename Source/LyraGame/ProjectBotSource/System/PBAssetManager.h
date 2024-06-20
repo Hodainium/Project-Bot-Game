@@ -31,6 +31,7 @@ public:
 	static const FPrimaryAssetType	ItemModItemType;
 	static const FPrimaryAssetType	CharacterModItemType;
 	static const FPrimaryAssetType	ConsumableItemType;
+	static const FPrimaryAssetType	UseItemType;
 	static const FPrimaryAssetType	UndefinedItemType;
 
 	/** Returns the current AssetManager object */

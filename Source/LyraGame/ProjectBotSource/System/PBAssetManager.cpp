@@ -14,6 +14,7 @@ const FPrimaryAssetType	UPBAssetManager::WeaponItemType = TEXT("Weapon_Type");
 const FPrimaryAssetType	UPBAssetManager::ItemModItemType = TEXT("ItemMod_Type");
 const FPrimaryAssetType	UPBAssetManager::CharacterModItemType = TEXT("CharacterMod_Type");
 const FPrimaryAssetType	UPBAssetManager::ConsumableItemType = TEXT("ConsumableItem_Type");
+const FPrimaryAssetType	UPBAssetManager::UseItemType = TEXT("UseItem_Type");
 
 
 UPBAssetManager::UPBAssetManager()

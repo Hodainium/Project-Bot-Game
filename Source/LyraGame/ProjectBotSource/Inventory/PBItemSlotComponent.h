@@ -25,6 +25,7 @@ enum class EPBInventorySlotType : uint8
 	Weapon_R,
 	Temporary,
 	UseItem,
+	Consumable,
 	Invalid
 };
 ENUM_RANGE_BY_FIRST_AND_LAST(EPBInventorySlotType, EPBInventorySlotType::Weapon_L, EPBInventorySlotType::Invalid);
@@ -224,6 +225,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "ItemSlots|Defaults")
 	int UseItemStartingSlots = 1;
 
+	UPROPERTY(EditDefaultsOnly, Category = "ItemSlots|Defaults")
+	int ConsumableStartingSlots = 2;
+
 	UPROPERTY(ReplicatedUsing = OnRep_SlotStruct_Weapon_L)
 	FPBInventorySlotStruct SlotStruct_Weapon_L;
 
@@ -247,6 +251,12 @@ protected:
 
 	UFUNCTION()
 	void OnRep_SlotStruct_UseItem(FPBInventorySlotStruct& PreviousValue);
+
+	UPROPERTY(ReplicatedUsing = OnRep_SlotStruct_Consumable)
+	FPBInventorySlotStruct SlotStruct_Consumable;
+
+	UFUNCTION()
+	void OnRep_SlotStruct_Consumable(FPBInventorySlotStruct& PreviousValue);
 
 	/*UPROPERTY(ReplicatedUsing = OnRep_SlotStruct_UseItem)
 	FPBInventorySlotStruct SlotStruct_Core;
