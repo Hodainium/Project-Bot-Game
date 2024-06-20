@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "PBEquippableItem.h"
 #include "ProjectBotSource/Inventory/PBItemDefinition.h"
 #include "PBWeaponItemDefinition.generated.h"
 
@@ -11,7 +12,7 @@ class UPBEquipmentDefinition;
  * 
  */
 UCLASS()
-class LYRAGAME_API UPBWeaponItemDefinition : public UPBItemDefinition
+class LYRAGAME_API UPBWeaponItemDefinition : public UPBEquippableItem
 {
 	GENERATED_BODY()
 
@@ -23,10 +24,6 @@ public:
 		ItemType = EPBItemType::Weapon;
 		Damage = 0.f;
 	}
-
-	/** Weapon actor to spawn */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Weapon)
-	TObjectPtr<UPBEquipmentDefinition> WeaponDefinition;
 
 	/** Does this weapon use ammo? */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Weapon)

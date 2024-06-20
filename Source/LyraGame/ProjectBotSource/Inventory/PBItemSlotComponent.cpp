@@ -405,7 +405,7 @@ void UPBItemSlotComponent::EquipItemInSlot(EPBInventorySlotType SlotType)
 					UE_LOGFMT(LogPBGame, Warning, "EquipComp is valid");
 
 					//Slots.EquippedItem = EquipmentManager->EquipItem(ItemDef->WeaponDefinition);
-					Slots.EquippedItem = EquipmentManager->EquipItem(ItemDef->WeaponDefinition, SlotItem);
+					Slots.EquippedItem = EquipmentManager->EquipItem(ItemDef->GetEquipmentDefinition(), SlotItem);
 				}
 			}
 
@@ -441,7 +441,7 @@ void UPBItemSlotComponent::EquipItemInSlot(EPBInventorySlotType SlotType)
 					//TODO create variants within null equipment entry for both left and right weapon slot
 
 					//Slots.EquippedItem = EquipmentManager->EquipItem(ItemDef->WeaponDefinition);
-					Slots.EquippedItem = EquipmentManager->EquipItem(NullWeaponDef->WeaponDefinition, SlotItem);
+					Slots.EquippedItem = EquipmentManager->EquipItem(NullWeaponDef->GetEquipmentDefinition(), SlotItem);
 				}
 			}
 		}
