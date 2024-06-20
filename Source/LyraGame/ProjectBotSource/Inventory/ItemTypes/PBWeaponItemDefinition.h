@@ -23,6 +23,8 @@ public:
 		bUsesAmmo = false;
 		ItemType = EPBItemType::Weapon;
 		Damage = 0.f;
+		CanBeStacked = false;
+		MaxStack = 1;
 	}
 
 	/** Does this weapon use ammo? */

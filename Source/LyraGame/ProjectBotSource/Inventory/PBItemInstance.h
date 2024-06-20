@@ -118,6 +118,9 @@ private:
 
 protected:
 	UPROPERTY(Replicated)
+	uint8 ItemStackCount;
+
+	UPROPERTY(Replicated)
 	TArray<TObjectPtr<UPBItemModInstance>> ItemMods;
 
 	UPROPERTY(ReplicatedUsing="OnRep_ReplicatedAdjectiveIndexKey")

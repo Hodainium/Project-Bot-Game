@@ -24,7 +24,7 @@ enum class EPBInventorySlotType : uint8
 	Weapon_L,
 	Weapon_R,
 	Temporary,
-	Item,
+	UseItem,
 	Invalid
 };
 ENUM_RANGE_BY_FIRST_AND_LAST(EPBInventorySlotType, EPBInventorySlotType::Weapon_L, EPBInventorySlotType::Invalid);
@@ -222,7 +222,7 @@ protected:
 	int TemporaryStartingSlots = 1;
 
 	UPROPERTY(EditDefaultsOnly, Category = "ItemSlots|Defaults")
-	int ItemStartingSlots = 1;
+	int UseItemStartingSlots = 1;
 
 	UPROPERTY(ReplicatedUsing = OnRep_SlotStruct_Weapon_L)
 	FPBInventorySlotStruct SlotStruct_Weapon_L;
@@ -242,13 +242,13 @@ protected:
 	UFUNCTION()
 	void OnRep_SlotStruct_Temporary(FPBInventorySlotStruct& PreviousValue);
 
-	UPROPERTY(ReplicatedUsing = OnRep_SlotStruct_Item)
-	FPBInventorySlotStruct SlotStruct_Item;
+	UPROPERTY(ReplicatedUsing = OnRep_SlotStruct_UseItem)
+	FPBInventorySlotStruct SlotStruct_UseItem;
 
 	UFUNCTION()
-	void OnRep_SlotStruct_Item(FPBInventorySlotStruct& PreviousValue);
+	void OnRep_SlotStruct_UseItem(FPBInventorySlotStruct& PreviousValue);
 
-	/*UPROPERTY(ReplicatedUsing = OnRep_SlotStruct_Item)
+	/*UPROPERTY(ReplicatedUsing = OnRep_SlotStruct_UseItem)
 	FPBInventorySlotStruct SlotStruct_Core;
 
 	UFUNCTION()

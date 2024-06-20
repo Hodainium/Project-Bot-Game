@@ -39,9 +39,14 @@ const FPrimaryAssetType* UPBItemDefinition::GetEnumAssetType(EPBItemType Enum)
 		{
 			return &UPBAssetManager::CharacterModItemType;
 		}
+		case EPBItemType::Consumable:
+		{
+			return &UPBAssetManager::ConsumableItemType;
+		}
 		default:
 		case EPBItemType::UndefinedType:
 		{
+			ensureMsgf(false, TEXT("ItemAsset DOES NOT HAVE ENUM TO ASSETTYPE DEFINED!!!!"));
 			UE_LOG(LogPBGame, Error, TEXT("ItemAsset DOES NOT HAVE ENUM TO ASSETTYPE DEFINED!!!!"));
 			return &UPBAssetManager::UndefinedItemType;
 		}

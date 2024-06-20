@@ -104,8 +104,8 @@ void UPBPickupableStatics::PushPickupToPlayer(APawn* PlayerPawn, TScriptInterfac
 
 		for (const FPBPickupInstance& Instance : PickupInventory.Instances)
 		{
-			/*InventoryComponent->AddItemInstance(Instance.Item);
-			SlotComponent->AddItemToSlot(EPBInventorySlotType::Temporary, 0, Instance.Item);*/
+			/*InventoryComponent->AddItemInstance(Instance.UseItem);
+			SlotComponent->AddItemToSlot(EPBInventorySlotType::Temporary, 0, Instance.UseItem);*/
 
 			UE_LOGFMT(LogPBGame, Warning, "Loop: {num}", i);
 

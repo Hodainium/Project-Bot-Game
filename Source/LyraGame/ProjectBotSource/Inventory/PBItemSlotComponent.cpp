@@ -31,12 +31,12 @@ void UPBItemSlotComponent::BeginPlay()
 		SetNumSlotsForEnum(EPBInventorySlotType::Weapon_L, WeaponLStartingSlots);
 		SetNumSlotsForEnum(EPBInventorySlotType::Weapon_R, WeaponRStartingSlots);
 		SetNumSlotsForEnum(EPBInventorySlotType::Temporary, TemporaryStartingSlots);
-		SetNumSlotsForEnum(EPBInventorySlotType::Item, ItemStartingSlots);
+		SetNumSlotsForEnum(EPBInventorySlotType::UseItem, UseItemStartingSlots);
 
 		SetActiveSlotIndexForEnum(EPBInventorySlotType::Weapon_L, -1);
 		SetActiveSlotIndexForEnum(EPBInventorySlotType::Weapon_R, -1);
 		SetActiveSlotIndexForEnum(EPBInventorySlotType::Temporary, -1);
-		SetActiveSlotIndexForEnum(EPBInventorySlotType::Item, -1);
+		SetActiveSlotIndexForEnum(EPBInventorySlotType::UseItem, -1);
 	}
 }
 
@@ -364,7 +364,7 @@ void UPBItemSlotComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 	DOREPLIFETIME(ThisClass, SlotStruct_Weapon_L);
 	DOREPLIFETIME(ThisClass, SlotStruct_Weapon_R);
 	DOREPLIFETIME(ThisClass, SlotStruct_Temporary);
-	DOREPLIFETIME(ThisClass, SlotStruct_Item);
+	DOREPLIFETIME(ThisClass, SlotStruct_UseItem);
 	DOREPLIFETIME(ThisClass, NullEquipmentStack);
 }
 
@@ -618,21 +618,21 @@ void UPBItemSlotComponent::OnRep_SlotStruct_Temporary(FPBInventorySlotStruct& Pr
 	}
 }
 
-void UPBItemSlotComponent::OnRep_SlotStruct_Item(FPBInventorySlotStruct& PreviousValue)
+void UPBItemSlotComponent::OnRep_SlotStruct_UseItem(FPBInventorySlotStruct& PreviousValue)
 {
 	if (SlotStruct_Temporary.SlotArray != PreviousValue.SlotArray)
 	{
-		Handle_OnRep_SlotsChanged(EPBInventorySlotType::Item, PreviousValue);
+		Handle_OnRep_SlotsChanged(EPBInventorySlotType::UseItem, PreviousValue);
 	}
 
 	if (SlotStruct_Temporary.NumSlots != PreviousValue.NumSlots)
 	{
-		Handle_OnRep_NumSlotsChanged(EPBInventorySlotType::Item, PreviousValue);
+		Handle_OnRep_NumSlotsChanged(EPBInventorySlotType::UseItem, PreviousValue);
 	}
 
 	if (SlotStruct_Temporary.ActiveSlotIndex != PreviousValue.ActiveSlotIndex)
 	{
-		Handle_OnRep_ActiveSlotIndexChanged(EPBInventorySlotType::Item, PreviousValue);
+		Handle_OnRep_ActiveSlotIndexChanged(EPBInventorySlotType::UseItem, PreviousValue);
 	}
 }
 
@@ -683,11 +683,12 @@ FPBInventorySlotStruct& UPBItemSlotComponent::GetSlotStructForEnum(EPBInventoryS
 		return SlotStruct_Weapon_R;
 	case EPBInventorySlotType::Temporary:
 		return SlotStruct_Temporary;
-	case EPBInventorySlotType::Item:
-		return SlotStruct_Item;
+	case EPBInventorySlotType::UseItem:
+		return SlotStruct_UseItem;
 	default:
 		{
-			UE_LOGFMT(LogPBGame, Error, "Invalid enum in getslotstruct invcomp");
+			ensureMsgf(false, TEXT("Invalid enum in getslotstruct invcomp nonconst"));
+			UE_LOGFMT(LogPBGame, Error, "Invalid enum in getslotstruct invcomp nonconst");
 			return SlotStruct_Weapon_L;
 		}
 	}
@@ -704,11 +705,13 @@ const FPBInventorySlotStruct& UPBItemSlotComponent::GetSlotStructForEnum_Const(E
 		return SlotStruct_Weapon_R;
 	case EPBInventorySlotType::Temporary:
 		return SlotStruct_Temporary;
-	case EPBInventorySlotType::Item:
-		return SlotStruct_Item;
+	case EPBInventorySlotType::UseItem:
+		return SlotStruct_UseItem;
 	default:
 	{
-		UE_LOGFMT(LogPBGame, Error, "Invalid enum in getslotstruct invcomp");
+		FDebug::DumpStackTraceToLog(ELogVerbosity::Error);
+		ensureMsgf(false, TEXT("Invalid enum in getslotstruct invcomp const"));
+		UE_LOGFMT(LogPBGame, Error, "Invalid enum in getslotstruct invcomp const");
 		return SlotStruct_Weapon_L;
 	}
 	}

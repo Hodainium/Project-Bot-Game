@@ -88,14 +88,14 @@ public:
 	TSoftObjectPtr<UTexture2D> ItemIcon;
 
 	/** Pickup mesh to display */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item|Graphics|World")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UseItem|Graphics|World")
 	TObjectPtr<UStaticMesh> LowQualityWorldModel;
 
 	/** Pickup mesh to display */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item|Graphics|World")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UseItem|Graphics|World")
 	TSoftObjectPtr<UStaticMesh> HighQualityWorldModel;
 
-	/** Item Quality */
+	/** UseItem Quality */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Item)
 	EPBItemQuality BaseItemQuality;
 
@@ -134,10 +134,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Abilities)
 	int32 AbilityLevel;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item|Fragments")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UseItem|Fragments")
 	TArray<TObjectPtr<UPBInventoryItemFragment>> Fragments;
 
-	UFUNCTION(BlueprintCallable, Category = "Item|Tags")
+	UFUNCTION(BlueprintCallable, Category = "UseItem|Tags")
 	FGameplayTagContainer GetItemTags();
 
 	/** Returns the logical name, equivalent to the primary asset id */

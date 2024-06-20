@@ -13,7 +13,7 @@ class UPBInventoryComponent;
 struct FPBInventoryList;
 class UPBInventoryItemInstance;
 
-//UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_Inventory_Item_Count, "ItemStatTags.Inventory.Item.Count");
+//UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_Inventory_Item_Count, "ItemStatTags.Inventory.UseItem.Count");
 
 /** A message when an item is added to the inventory */
 USTRUCT(BlueprintType)
