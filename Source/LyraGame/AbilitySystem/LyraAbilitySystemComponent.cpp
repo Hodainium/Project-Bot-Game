@@ -12,6 +12,7 @@
 #include "Character/LyraCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Logging/StructuredLog.h"
+#include "ProjectBotSource/Logs/PBLogChannels.h"
 #include "ProjectBotSource/Tags/PB_Tags.h"
 #include "System/LyraAssetManager.h"
 #include "System/LyraGameData.h"
@@ -430,14 +431,19 @@ void ULyraAbilitySystemComponent::OnTagUpdated(const FGameplayTag& Tag, bool Tag
 	}
 	else if (Tag == PB_MovementSetting_Tags::TAG_MOVEMENT_SETTING_ACCEPTCLIENTPOSITION)
 	{
+		UE_LOGFMT(LogPBGame, Warning, "TAG_MOVEMENT_SETTING_ACCEPTCLIENTPOSITION called with tag present: {0} and role {1}", TagExists, GetOwnerActor()->GetLocalRole());
+
 		OwningChar->GetCharacterMovement()->bServerAcceptClientAuthoritativePosition = TagExists;
 	}
 	else if (Tag == PB_MovementSetting_Tags::TAG_MOVEMENT_SETTING_IGNOREMOVEMENTCHECK)
 	{
+		UE_LOGFMT(LogPBGame, Warning, "TAG_MOVEMENT_SETTING_IGNOREMOVEMENTCHECK called with tag present: {0} and role {1}", TagExists, GetOwnerActor()->GetLocalRole());
+
 		OwningChar->GetCharacterMovement()->bIgnoreClientMovementErrorChecksAndCorrection = TagExists;
 	}
 	else if (Tag == PB_MovementSetting_Tags::TAG_MOVEMENT_SETTING_ALLOWROTATIONDURINGROOTMOTION)
 	{
+		UE_LOGFMT(LogPBGame, Warning, "TAG_MOVEMENT_SETTING_ALLOWROTATIONDURINGROOTMOTION called with tag present: {0} and role {1}", TagExists, GetOwnerActor()->GetLocalRole());
 		OwningChar->GetCharacterMovement()->bAllowPhysicsRotationDuringAnimRootMotion = TagExists;
 	}
 	//else if (Tag == PB_MovementSetting_Tags::TAG_MOVEMENT_SETTING_LOCKMOVEINPUT)
