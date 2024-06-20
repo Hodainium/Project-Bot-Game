@@ -4,10 +4,9 @@
 #include "ProjectBotSource/AbilitySystem/TargetData/PBTargetDataTypes.h"
 
 
-bool FGameplayAbilityTargetData_PBMeleeInput::NetSerialize(FArchive& Ar, UPackageMap* Map, bool& bOutSuccess)
+bool FGameplayAbilityTargetData_PBComboInput::NetSerialize(FArchive& Ar, UPackageMap* Map, bool& bOutSuccess)
 {
 	Ar << Combo;
-	Ar << AttackAngle;
 
 	bOutSuccess = true;
 	return true;

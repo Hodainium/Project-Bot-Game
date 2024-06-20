@@ -120,12 +120,12 @@ void UPBGameplayAbility_MeleeWeapon::OnTargetDataReadyCallback(const FGameplayAb
 		FGameplayAbilityTargetData* DataToCheck = LocalTargetDataHandle.Get(0); //TODO Use this to check nullptr
 
 		//If we send target data with a combo tag we know that it's to input another attack rather than damage data. Treat it differently
-		if (DataToCheck != nullptr && DataToCheck->GetScriptStruct() == FGameplayAbilityTargetData_PBMeleeInput::StaticStruct())
+		if (DataToCheck != nullptr && DataToCheck->GetScriptStruct() == FGameplayAbilityTargetData_PBComboInput::StaticStruct())
 		{
-			FGameplayAbilityTargetData_PBMeleeInput* PBMeleeInput = static_cast<FGameplayAbilityTargetData_PBMeleeInput*>(LocalTargetDataHandle.Get(0));
+			FGameplayAbilityTargetData_PBComboInput* PBMeleeInput = static_cast<FGameplayAbilityTargetData_PBComboInput*>(LocalTargetDataHandle.Get(0));
 
 			//Execute BP_HandleNewCombo
-			OnComboTargetDataReady(PBMeleeInput->Combo, PBMeleeInput->AttackAngle);
+			OnComboTargetDataReady(PBMeleeInput->Combo);
 			MyAbilityComponent->ConsumeClientReplicatedTargetData(CurrentSpecHandle, CurrentActivationInfo.GetActivationPredictionKey());
 			return;
 		}
@@ -292,13 +292,12 @@ void UPBGameplayAbility_MeleeWeapon::OnWeaponTickFinished(const TArray<FHitResul
 	}
 }
 
-void UPBGameplayAbility_MeleeWeapon::SetComboAttackTargetData(uint8 Combo, float AttackAngle)
+void UPBGameplayAbility_MeleeWeapon::SetComboAttackTargetData(uint8 Combo)
 {
 	FGameplayAbilityTargetDataHandle TargetDataHandle;
-	FGameplayAbilityTargetData_PBMeleeInput* TargetData = new FGameplayAbilityTargetData_PBMeleeInput(); //** USE OF new() IS **REQUIRED** **
+	FGameplayAbilityTargetData_PBComboInput* TargetData = new FGameplayAbilityTargetData_PBComboInput(); //** USE OF new() IS **REQUIRED** **
 
 	TargetData->Combo = Combo;
-	TargetData->AttackAngle = AttackAngle;
 
 	TargetDataHandle.Add(TargetData);
 

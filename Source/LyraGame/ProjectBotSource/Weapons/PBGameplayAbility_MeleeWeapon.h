@@ -6,7 +6,7 @@
 #include "ProjectBotSource/Equipment/PBGameplayAbility_FromEquipment.h"
 #include "PBGameplayAbility_MeleeWeapon.generated.h"
 
-struct FGameplayAbilityTargetData_PBMeleeInput;
+struct FGameplayAbilityTargetData_PBComboInput;
 class UPBMeleeWeaponInstance;
 enum ECollisionChannel : int;
 
@@ -64,10 +64,10 @@ protected:
 
 	// Called when target data is ready
 	UFUNCTION(BlueprintImplementableEvent)
-	void OnComboTargetDataReady(uint8 Combo, float AttackAngle);
+	void OnComboTargetDataReady(uint8 Combo);
 
 	UFUNCTION(BlueprintCallable)
-	void SetComboAttackTargetData(uint8 Combo, float AttackAngle);
+	void SetComboAttackTargetData(uint8 Combo);
 
 	UPROPERTY(BlueprintReadWrite)
 	int CurrentCombo;

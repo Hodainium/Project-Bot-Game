@@ -28,10 +28,10 @@ int UBPFL_PBTargetTypes::GetComboNumFromTargetHandle(const FGameplayAbilityTarge
 	}
 	// This is basically the type checking pass, static_cast does not have type safety, this is why we do this check.
 	// If we don't do this then it will object slice the struct and thus we have no way of making sure its that type.
-	if (Data->GetScriptStruct() == FGameplayAbilityTargetData_PBMeleeInput::StaticStruct())
+	if (Data->GetScriptStruct() == FGameplayAbilityTargetData_PBComboInput::StaticStruct())
 	{
 		// Here is when you would do the cast because we know its the correct type already
-		const FGameplayAbilityTargetData_PBMeleeInput* CustomData = static_cast<const FGameplayAbilityTargetData_PBMeleeInput*>(Data);
+		const FGameplayAbilityTargetData_PBComboInput* CustomData = static_cast<const FGameplayAbilityTargetData_PBComboInput*>(Data);
 		return CustomData->Combo;
 	}
 	if (Data->GetScriptStruct() == FPBGameplayAbilityTargetData_MeleeHit::StaticStruct())

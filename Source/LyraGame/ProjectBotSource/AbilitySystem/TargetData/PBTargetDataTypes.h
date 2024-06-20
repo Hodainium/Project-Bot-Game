@@ -11,7 +11,7 @@
  */
  /** Target data with just a source and target location in space */
 USTRUCT(BlueprintType)
-struct FGameplayAbilityTargetData_PBMeleeInput : public FGameplayAbilityTargetData
+struct FGameplayAbilityTargetData_PBComboInput : public FGameplayAbilityTargetData
 {
 	GENERATED_USTRUCT_BODY()
 
@@ -19,27 +19,23 @@ struct FGameplayAbilityTargetData_PBMeleeInput : public FGameplayAbilityTargetDa
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = Targeting)
 	uint8 Combo;
 
-	/** Angle of attack */
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = Targeting)
-	float AttackAngle;
-
 	// -------------------------------------
 
 	virtual UScriptStruct* GetScriptStruct() const override
 	{
-		return FGameplayAbilityTargetData_PBMeleeInput::StaticStruct();
+		return FGameplayAbilityTargetData_PBComboInput::StaticStruct();
 	}
 
 	virtual FString ToString() const override
 	{
-		return TEXT("FGameplayAbilityTargetData_PBMeleeInput");
+		return TEXT("FGameplayAbilityTargetData_PBComboInput");
 	}
 
 	bool NetSerialize(FArchive& Ar, class UPackageMap* Map, bool& bOutSuccess);
 };
 
 template<>
-struct TStructOpsTypeTraits<FGameplayAbilityTargetData_PBMeleeInput> : public TStructOpsTypeTraitsBase2<FGameplayAbilityTargetData_PBMeleeInput>
+struct TStructOpsTypeTraits<FGameplayAbilityTargetData_PBComboInput> : public TStructOpsTypeTraitsBase2<FGameplayAbilityTargetData_PBComboInput>
 {
 	enum
 	{
