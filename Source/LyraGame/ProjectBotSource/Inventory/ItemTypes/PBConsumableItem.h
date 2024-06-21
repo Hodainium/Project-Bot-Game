@@ -14,8 +14,12 @@ class LYRAGAME_API UPBConsumableItem : public UPBEquippableItem
 {
 	GENERATED_BODY()
 
+public:
+
 	UPBConsumableItem()
 	{
 		ItemType = EPBItemType::Consumable;
 	}
+
+	virtual FText GetDisplayItemTypeText() const override;
 };

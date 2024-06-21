@@ -8,6 +8,19 @@
 #include "PBWeaponItemDefinition.generated.h"
 
 class UPBEquipmentDefinition;
+
+
+
+
+UENUM(BlueprintType)
+enum class EPBWeaponHandedType : uint8
+{
+	LeftHanded,
+	RightHanded,
+	BothHanded,
+	UndefHanded
+};
+
 /**
  * 
  */
@@ -25,6 +38,7 @@ public:
 		Damage = 0.f;
 		CanBeStacked = false;
 		MaxStack = 1;
+		WeaponHandedType = EPBWeaponHandedType::UndefHanded;
 	}
 
 	/** Does this weapon use ammo? */
@@ -34,5 +48,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Weapon)
 	float Damage;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Weapon)
+	EPBWeaponHandedType WeaponHandedType;
 
+	virtual FText GetDisplayItemTypeText() const override;
 };

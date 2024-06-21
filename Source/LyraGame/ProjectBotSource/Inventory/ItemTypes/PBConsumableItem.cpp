@@ -4,5 +4,7 @@
 #include "ProjectBotSource/Inventory/ItemTypes/PBConsumableItem.h"
 
 
-
-
+FText UPBConsumableItem::GetDisplayItemTypeText() const
+{
+	return NSLOCTEXT("ItemTypeDisplay", "ConsumableItemType", "Contraption");
+}

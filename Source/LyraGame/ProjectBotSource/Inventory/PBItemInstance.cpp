@@ -71,7 +71,12 @@ TArray<UPBItemModInstance*> UPBInventoryItemInstance::GetItemMods() const
 
 EPBItemType UPBInventoryItemInstance::GetItemTypeEnum() const
 {
-	return ItemDefinition->ItemType;
+	if (ItemDefinition)
+	{
+		return ItemDefinition->ItemType;
+	}
+
+	return EPBItemType::UndefinedType;
 }
 
 FText UPBInventoryItemInstance::GetItemName() const
@@ -84,6 +89,16 @@ FText UPBInventoryItemInstance::GetItemName() const
 		}
 
 		return ItemDefinition->ItemName;
+	}
+
+	return FText::GetEmpty();
+}
+
+FText UPBInventoryItemInstance::GetItemDescription() const
+{
+	if(ItemDefinition)
+	{
+		return ItemDefinition->ItemDescription;
 	}
 
 	return FText::GetEmpty();

@@ -61,11 +61,14 @@ public:
 	UFUNCTION(BlueprintCallable, Category = Inventory)
 	TArray<UPBItemModInstance*> GetItemMods() const;
 
-	UFUNCTION(BlueprintCallable, Category = Inventory)
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = Inventory)
 	EPBItemType GetItemTypeEnum() const;
 
 	UFUNCTION(BlueprintCallable, Category = Inventory)
 	FText GetItemName() const;
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = Inventory)
+	FText GetItemDescription() const;
 
 	UFUNCTION(BlueprintCallable, Category = Inventory)
 	float GetItemWeight() const;

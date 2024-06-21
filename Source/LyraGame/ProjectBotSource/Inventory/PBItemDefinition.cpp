@@ -78,6 +78,11 @@ const UPBInventoryItemFragment* UPBItemDefinition::FindFragmentByClass(
 	return nullptr;
 }
 
+FText UPBItemDefinition::GetDisplayItemTypeText() const
+{
+	return NSLOCTEXT("ItemTypeDisplay", "UndefinedType", "UNDEFINED");
+}
+
 bool UPBItemDefinition::IsConsumable() const
 {
 	if (MaxStack <= 0)

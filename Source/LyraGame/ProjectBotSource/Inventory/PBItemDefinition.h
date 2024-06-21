@@ -149,6 +149,9 @@ public:
 
 	const UPBInventoryItemFragment* FindFragmentByClass(TSubclassOf<UPBInventoryItemFragment> FragmentClass) const;
 
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Item|Display")
+	virtual FText GetDisplayItemTypeText() const;
+
 private:
 	static const FPrimaryAssetType* GetEnumAssetType(EPBItemType Enum);
 };
