@@ -709,6 +709,8 @@ FPBInventorySlotStruct& UPBItemSlotComponent::GetSlotStructForEnum(EPBInventoryS
 		return SlotStruct_UseItem;
 	case EPBInventorySlotType::Consumable:
 		return SlotStruct_Consumable;
+	case EPBInventorySlotType::Invalid:
+		return SlotStruct_Invalid;
 	default:
 		{
 			ensureMsgf(false, TEXT("Invalid enum in getslotstruct invcomp nonconst"));
@@ -733,6 +735,8 @@ const FPBInventorySlotStruct& UPBItemSlotComponent::GetSlotStructForEnum_Const(E
 		return SlotStruct_UseItem;
 	case EPBInventorySlotType::Consumable:
 		return SlotStruct_Consumable;
+	case EPBInventorySlotType::Invalid:
+		return SlotStruct_Invalid;
 	default:
 	{
 		FDebug::DumpStackTraceToLog(ELogVerbosity::Error);

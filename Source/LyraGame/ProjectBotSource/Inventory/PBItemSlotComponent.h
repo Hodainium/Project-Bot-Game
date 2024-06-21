@@ -258,6 +258,9 @@ protected:
 	UFUNCTION()
 	void OnRep_SlotStruct_Consumable(FPBInventorySlotStruct& PreviousValue);
 
+	UPROPERTY()
+	FPBInventorySlotStruct SlotStruct_Invalid;
+
 	/*UPROPERTY(ReplicatedUsing = OnRep_SlotStruct_UseItem)
 	FPBInventorySlotStruct SlotStruct_Core;
 
