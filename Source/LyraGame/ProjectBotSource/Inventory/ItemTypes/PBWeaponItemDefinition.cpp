@@ -3,6 +3,8 @@
 
 #include "ProjectBotSource/Inventory/ItemTypes/PBWeaponItemDefinition.h"
 
+#include "ProjectBotSource/Inventory/PBItemSlotComponent.h"
+
 FText UPBWeaponItemDefinition::GetDisplayItemTypeText() const
 {
 	switch(WeaponHandedType)
@@ -16,5 +18,27 @@ FText UPBWeaponItemDefinition::GetDisplayItemTypeText() const
 	case EPBWeaponHandedType::UndefHanded:
 	default:
 		return Super::GetDisplayItemTypeText();
+	}
+}
+
+void UPBWeaponItemDefinition::GetCompatibleSlotTypes(TArray<EPBInventorySlotType>& CompatibleTypes) const
+{
+	switch (WeaponHandedType)
+	{
+	case EPBWeaponHandedType::LeftHanded:
+		CompatibleTypes.Add(EPBInventorySlotType::Weapon_L);
+		break;
+	case EPBWeaponHandedType::RightHanded:
+		CompatibleTypes.Add(EPBInventorySlotType::Weapon_R);
+		break;
+	case EPBWeaponHandedType::BothHanded:
+		{
+		CompatibleTypes.Add(EPBInventorySlotType::Weapon_L);
+		CompatibleTypes.Add(EPBInventorySlotType::Weapon_R);
+		break;
+		}
+	case EPBWeaponHandedType::UndefHanded:
+	default:
+		break;
 	}
 }

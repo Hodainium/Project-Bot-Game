@@ -9,6 +9,7 @@
 #include "PBItemDefinition.generated.h"
 
 
+enum class EPBInventorySlotType : uint8;
 enum class EPBItemQuality : uint8;
 class UPBInventoryItemInstance;
 class UPBEquipmentDefinition;
@@ -151,6 +152,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Item|Display")
 	virtual FText GetDisplayItemTypeText() const;
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Item|Inventory")
+	virtual void GetCompatibleSlotTypes(TArray<EPBInventorySlotType>& CompatibleTypes) const;
 
 private:
 	static const FPrimaryAssetType* GetEnumAssetType(EPBItemType Enum);

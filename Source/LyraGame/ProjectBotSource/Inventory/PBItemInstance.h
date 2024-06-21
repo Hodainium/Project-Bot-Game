@@ -70,6 +70,9 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = Inventory)
 	FText GetItemDescription() const;
 
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Item|Inventory")
+	void GetCompatibleSlotTypes(TArray<EPBInventorySlotType>& CompatibleTypes) const;
+
 	UFUNCTION(BlueprintCallable, Category = Inventory)
 	float GetItemWeight() const;
 

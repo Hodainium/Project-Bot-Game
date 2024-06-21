@@ -83,6 +83,10 @@ FText UPBItemDefinition::GetDisplayItemTypeText() const
 	return NSLOCTEXT("ItemTypeDisplay", "UndefinedType", "UNDEFINED");
 }
 
+void UPBItemDefinition::GetCompatibleSlotTypes(TArray<EPBInventorySlotType>& CompatibleTypes) const
+{
+}
+
 bool UPBItemDefinition::IsConsumable() const
 {
 	if (MaxStack <= 0)

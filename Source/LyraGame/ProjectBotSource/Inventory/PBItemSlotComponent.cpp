@@ -568,6 +568,36 @@ void UPBItemSlotComponent::Handle_OnRep_ActiveSlotIndexChanged(EPBInventorySlotT
 	MessageSystem.BroadcastMessage(PB_ItemSlots_Tags::TAG_ITEMSLOTS_MESSAGE_ACTIVEINDEXCHANGED, Message);
 }
 
+bool UPBItemSlotComponent::AreSlotIndexesCompatible(FPBInventorySlotIndex SourceIndex,
+	FPBInventorySlotIndex TargetIndex) const
+{
+	//Both directions need to be compatible
+	return IsIndexCompatibleWithSlotType(SourceIndex, TargetIndex.SlotType) && IsIndexCompatibleWithSlotType(TargetIndex, SourceIndex.SlotType);
+}
+
+bool UPBItemSlotComponent::IsIndexCompatibleWithSlotType(FPBInventorySlotIndex Index,
+	EPBInventorySlotType SlotType) const
+{
+	//Temp can hold anything so return true
+	if(SlotType == EPBInventorySlotType::Temporary)
+	{
+		return true;
+	}
+
+	static TArray<EPBInventorySlotType> CompatibleSlotTypes;
+	CompatibleSlotTypes.Reset();
+
+	if (UPBInventoryItemInstance* Item = GetItemAtIndex(Index))
+	{
+		Item->GetCompatibleSlotTypes(CompatibleSlotTypes);
+
+		return CompatibleSlotTypes.Contains(SlotType);
+	}
+
+	//If item is nullptr it's compatible with any slot type so yes
+	return true;
+}
+
 void UPBItemSlotComponent::OnRep_SlotStruct_Weapon_L(FPBInventorySlotStruct& PreviousValue)
 {
 	if (SlotStruct_Weapon_L.SlotArray != PreviousValue.SlotArray)

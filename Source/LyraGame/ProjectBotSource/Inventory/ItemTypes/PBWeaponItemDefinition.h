@@ -52,4 +52,6 @@ public:
 	EPBWeaponHandedType WeaponHandedType;
 
 	virtual FText GetDisplayItemTypeText() const override;
+
+	virtual void GetCompatibleSlotTypes(TArray<EPBInventorySlotType>& CompatibleTypes) const override;
 };

@@ -104,6 +104,14 @@ FText UPBInventoryItemInstance::GetItemDescription() const
 	return FText::GetEmpty();
 }
 
+void UPBInventoryItemInstance::GetCompatibleSlotTypes(TArray<EPBInventorySlotType>& CompatibleTypes) const
+{
+	if(ItemDefinition)
+	{
+		ItemDefinition->GetCompatibleSlotTypes(CompatibleTypes);
+	}
+}
+
 float UPBInventoryItemInstance::GetItemWeight() const
 {
 	if (ItemDefinition)

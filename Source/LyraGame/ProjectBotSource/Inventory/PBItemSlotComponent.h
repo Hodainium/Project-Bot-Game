@@ -206,6 +206,13 @@ protected:
 	UFUNCTION(BlueprintCallable, Client, Reliable, Category = Inventory)
 	void Client_SwapSlots(bool bSuccessful);
 
+	UFUNCTION(BlueprintCallable, Category = Inventory)
+	bool AreSlotIndexesCompatible(FPBInventorySlotIndex SourceIndex, FPBInventorySlotIndex TargetIndex) const;
+
+	//Checks to see if index is compatible with slot type.
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = Inventory)
+	bool IsIndexCompatibleWithSlotType(FPBInventorySlotIndex Index, EPBInventorySlotType SlotType) const;
+
 	//Flag that is set and removed when sending a server swap request and recieving confirmation
 	UPROPERTY()
 	bool IsPendingServerConfirmation;
