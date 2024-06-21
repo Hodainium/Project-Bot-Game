@@ -221,19 +221,19 @@ protected:
 	TArray<FPBInventorySlotIndex> PendingSlotData;
 
 	UPROPERTY(EditDefaultsOnly, Category = "ItemSlots|Defaults")
-	int WeaponLStartingSlots = 3;
+	int WeaponLStartingSlots;
 
 	UPROPERTY(EditDefaultsOnly, Category = "ItemSlots|Defaults")
-	int WeaponRStartingSlots = 3;
+	int WeaponRStartingSlots;
 
 	UPROPERTY(EditDefaultsOnly, Category = "ItemSlots|Defaults")
-	int TemporaryStartingSlots = 1;
+	int TemporaryStartingSlots;
 
 	UPROPERTY(EditDefaultsOnly, Category = "ItemSlots|Defaults")
-	int UseItemStartingSlots = 1;
+	int UseItemStartingSlots;
 
 	UPROPERTY(EditDefaultsOnly, Category = "ItemSlots|Defaults")
-	int ConsumableStartingSlots = 2;
+	int ConsumableStartingSlots;
 
 	UPROPERTY(ReplicatedUsing = OnRep_SlotStruct_Weapon_L)
 	FPBInventorySlotStruct SlotStruct_Weapon_L;

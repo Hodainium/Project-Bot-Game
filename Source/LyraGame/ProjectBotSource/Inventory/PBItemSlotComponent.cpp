@@ -19,7 +19,12 @@ UPBItemSlotComponent::UPBItemSlotComponent(const FObjectInitializer& ObjectIniti
 	SetIsReplicatedByDefault(true);
 
 	IsPendingServerConfirmation = false;
-
+	
+	WeaponLStartingSlots = 3;
+	WeaponRStartingSlots = 3;
+	TemporaryStartingSlots = 1;
+	UseItemStartingSlots = 1;
+	ConsumableStartingSlots = 3;
 }
 
 void UPBItemSlotComponent::BeginPlay()
