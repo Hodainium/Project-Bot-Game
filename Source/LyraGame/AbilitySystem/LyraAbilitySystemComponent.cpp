@@ -424,10 +424,12 @@ void ULyraAbilitySystemComponent::OnTagUpdated(const FGameplayTag& Tag, bool Tag
 	{
 		//OwningChar->GetCharacterMovement()->bUseControllerDesiredRotation = TagExists;
 		OwningChar->bUseControllerRotationYaw = TagExists;
+		OwningChar->GetCharacterMovement()->bOrientRotationToMovement = !TagExists;
 	}
 	else if(Tag == PB_MovementSetting_Tags::TAG_MOVEMENT_SETTING_ORIENTTOMOVEMENT)
 	{
 		OwningChar->GetCharacterMovement()->bOrientRotationToMovement = TagExists;
+		OwningChar->bUseControllerRotationYaw = !TagExists;
 	}
 	else if (Tag == PB_MovementSetting_Tags::TAG_MOVEMENT_SETTING_ACCEPTCLIENTPOSITION)
 	{

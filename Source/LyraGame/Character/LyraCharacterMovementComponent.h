@@ -64,6 +64,7 @@ public:
 	//~UMovementComponent interface
 	virtual FRotator GetDeltaRotation(float DeltaTime) const override;
 	virtual float GetMaxSpeed() const override;
+	virtual float GetMaxAcceleration() const override;
 	//~End of UMovementComponent interface
 
 protected:

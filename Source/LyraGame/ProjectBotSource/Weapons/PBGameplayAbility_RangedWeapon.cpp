@@ -12,6 +12,7 @@
 #include "AbilitySystem/LyraGameplayAbilityTargetData_SingleTargetHit.h"
 #include "DrawDebugHelpers.h"
 #include "PBRangedWeaponInstance.h"
+#include "ProjectBotSource/AbilitySystem/TargetData/PBTargetDataTypes.h"
 #include "ProjectBotSource/Logs/PBLogChannels.h"
 
 namespace PBConsoleVariables
@@ -496,6 +497,19 @@ void UPBGameplayAbility_RangedWeapon::OnTargetDataReadyCallback(const FGameplayA
 
 		const bool bIsTargetDataValid = true;
 
+		FGameplayAbilityTargetData* DataToCheck = LocalTargetDataHandle.Get(0); //TODO Use this to check nullptr
+
+		//If we send target data with a combo tag we know that it's to input another attack rather than damage data. Treat it differently
+		if (DataToCheck != nullptr && DataToCheck->GetScriptStruct() == FGameplayAbilityTargetData_PBComboInput::StaticStruct())
+		{
+			FGameplayAbilityTargetData_PBComboInput* PBMeleeInput = static_cast<FGameplayAbilityTargetData_PBComboInput*>(LocalTargetDataHandle.Get(0));
+
+			//Execute BP_HandleNewCombo
+			OnAttackTargetDataReady(PBMeleeInput->Combo);
+			MyAbilityComponent->ConsumeClientReplicatedTargetData(CurrentSpecHandle, CurrentActivationInfo.GetActivationPredictionKey());
+			return;
+		}
+
 		bool bProjectileWeapon = false;
 
 #if WITH_SERVER_CODE
@@ -549,6 +563,19 @@ void UPBGameplayAbility_RangedWeapon::OnTargetDataReadyCallback(const FGameplayA
 
 	// We've processed the data
 	MyAbilityComponent->ConsumeClientReplicatedTargetData(CurrentSpecHandle, CurrentActivationInfo.GetActivationPredictionKey());
+}
+
+void UPBGameplayAbility_RangedWeapon::SetComboAttackTargetData(uint8 Combo)
+{
+	FGameplayAbilityTargetDataHandle TargetDataHandle;
+	FGameplayAbilityTargetData_PBComboInput* TargetData = new FGameplayAbilityTargetData_PBComboInput(); //** USE OF new() IS **REQUIRED** **
+
+	TargetData->Combo = Combo;
+
+	TargetDataHandle.Add(TargetData);
+
+	// Process the target data immediately
+	OnTargetDataReadyCallback(TargetDataHandle, FGameplayTag());
 }
 
 void UPBGameplayAbility_RangedWeapon::StartRangedWeaponTargeting()

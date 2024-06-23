@@ -115,11 +115,18 @@ protected:
 	void OnTargetDataReadyCallback(const FGameplayAbilityTargetDataHandle& InData, FGameplayTag ApplicationTag);
 
 	UFUNCTION(BlueprintCallable)
+	void SetComboAttackTargetData(uint8 Combo);
+
+	UFUNCTION(BlueprintCallable)
 	void StartRangedWeaponTargeting();
 
 	// Called when target data is ready
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnRangedWeaponTargetDataReady(const FGameplayAbilityTargetDataHandle& TargetData);
+
+	// Called when target data is ready
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnAttackTargetDataReady(uint8 Combo);
 
 private:
 	FDelegateHandle OnTargetDataReadyCallbackDelegateHandle;

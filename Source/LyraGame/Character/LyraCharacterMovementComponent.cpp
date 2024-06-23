@@ -140,3 +140,21 @@ float ULyraCharacterMovementComponent::GetMaxSpeed() const
 
 	return Super::GetMaxSpeed();
 }
+
+float ULyraCharacterMovementComponent::GetMaxAcceleration() const
+{
+	if (UAbilitySystemComponent* ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(GetOwner()))
+	{
+		if (ASC->HasMatchingGameplayTag(TAG_Gameplay_MovementStopped))
+		{
+			return 0;
+		}
+
+		if (ASC->HasMatchingGameplayTag(PB_MovementSetting_Tags::TAG_MOVEMENT_SETTING_LOCKMOVEMENT))
+		{
+			return 0;
+		}
+	}
+
+	return Super::GetMaxAcceleration();
+}
