@@ -420,6 +420,7 @@ void UPBItemSlotComponent::EquipItemInSlot(EPBInventorySlotType SlotType)
 		{
 		case EPBItemType::Weapon:
 		case EPBItemType::Consumable:
+		case EPBItemType::UseItem:
 		{
 			if (UPBEquippableItem* ItemDef = Cast<UPBEquippableItem>(SlotItem->GetItemDefinition()))
 			{

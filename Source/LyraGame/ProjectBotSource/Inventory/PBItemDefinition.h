@@ -33,6 +33,7 @@ enum class EPBItemType : uint8
 	ItemMod,
 	CharacterMod,
 	Consumable,
+	UseItem,
 	UndefinedType
 };
 
