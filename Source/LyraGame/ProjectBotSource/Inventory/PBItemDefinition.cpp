@@ -43,6 +43,10 @@ const FPrimaryAssetType* UPBItemDefinition::GetEnumAssetType(EPBItemType Enum)
 		{
 			return &UPBAssetManager::ConsumableItemType;
 		}
+		case EPBItemType::UseItem:
+		{
+			return &UPBAssetManager::UseItemType;
+		}
 		default:
 		case EPBItemType::UndefinedType:
 		{

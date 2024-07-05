@@ -45,6 +45,37 @@ void UPBHealthSet::PostGameplayEffectExecute(const FGameplayEffectModCallbackDat
 			NewTargetData->HitResult = *HitResult;
 		}*/
 
+		FGameplayTagContainer AssetTags;
+
+		Data.EffectSpec.GetAllAssetTags(AssetTags);
+
+		float KnockbackLevel = 0.f;
+
+		if(AssetTags.HasTagExact(PB_Knockback_Tags::TAG_KNOCKBACK_LEVEL_0))
+		{
+			KnockbackLevel = 0.f;
+		}
+		else if(AssetTags.HasTagExact(PB_Knockback_Tags::TAG_KNOCKBACK_LEVEL_1))
+		{
+			KnockbackLevel = 1.f;
+		}
+		else if (AssetTags.HasTagExact(PB_Knockback_Tags::TAG_KNOCKBACK_LEVEL_2))
+		{
+			KnockbackLevel = 2.f;
+		}
+		else if (AssetTags.HasTagExact(PB_Knockback_Tags::TAG_KNOCKBACK_LEVEL_3))
+		{
+			KnockbackLevel = 3.f;
+		}
+		else if (AssetTags.HasTagExact(PB_Knockback_Tags::TAG_KNOCKBACK_LEVEL_4))
+		{
+			KnockbackLevel = 4.f;
+		}
+		else if (AssetTags.HasTagExact(PB_Knockback_Tags::TAG_KNOCKBACK_LEVEL_5))
+		{
+			KnockbackLevel = 5.f;
+		}
+
 		FVector InstigatorLocation = TypedContext->GetEffectCauser()->GetActorLocation();
 		FVector TargetLocation = Data.Target.GetAvatarActor()->GetActorLocation();
 
@@ -59,6 +90,7 @@ void UPBHealthSet::PostGameplayEffectExecute(const FGameplayEffectModCallbackDat
 
 		Payload.EventTag = PB_GameplayEvent_Tags::TAG_GAMEPLAYEVENT_KNOCKBACK;
 		Payload.Instigator = TypedContext->GetEffectCauser();  //GetInstigator();
+		Payload.EventMagnitude = KnockbackLevel;
 		//Payload.Target = Data.Target.GetAvatarActor();
 		//Payload.OptionalObject = Data.EffectSpec.Def;
 		//Payload.ContextHandle = Data.EffectSpec.GetEffectContext();

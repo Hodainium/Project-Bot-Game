@@ -16,6 +16,7 @@ struct FKnockbackStatics
 {
 	FGameplayEffectAttributeCaptureDefinition BaseKnockbackDef;
 
+
 	FKnockbackStatics()
 	{
 		BaseKnockbackDef = FGameplayEffectAttributeCaptureDefinition(UPBCombatSet::GetBaseKnockbackAttribute(), EGameplayEffectAttributeCaptureSource::Source, true);

@@ -68,6 +68,16 @@ namespace PB_Cheat_Tags
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_CHEAT_UNLIMITEDSTAMINA, "Cheat.UnlimitedStamina", "UnlimitedStamina cheat is active on the owner.");
 }
 
+namespace PB_Knockback_Tags
+{
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_KNOCKBACK_LEVEL_0, "Damage.KnockbackLevel.0", "Level 0 knockback");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_KNOCKBACK_LEVEL_1, "Damage.KnockbackLevel.1", "Level 1 knockback");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_KNOCKBACK_LEVEL_2, "Damage.KnockbackLevel.2", "Level 2 knockback");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_KNOCKBACK_LEVEL_3, "Damage.KnockbackLevel.3", "Level 3 knockback");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_KNOCKBACK_LEVEL_4, "Damage.KnockbackLevel.4", "Level 4 knockback");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_KNOCKBACK_LEVEL_5, "Damage.KnockbackLevel.5", "Level 5 knockback");
+}
+
 namespace PB_MovementMode_Tags
 {
 	// These are mapped to the movement modes inside GetMovementModeTagMap()
