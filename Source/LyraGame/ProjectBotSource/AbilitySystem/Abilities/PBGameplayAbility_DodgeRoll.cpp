@@ -16,10 +16,6 @@
 #include "Logging/StructuredLog.h"
 #include "ProjectBotSource/AbilitySystem/TargetData/PBTargetDataTypes.h"
 
-// Weapon fire will be blocked/canceled if the player has this tag
-//UE_DEFINE_GAMEPLAY_TAG_STATIC(TAG_PB_WeaponFireBlocked, "Ability.Weapon.NoFiring");
-UE_DEFINE_GAMEPLAY_TAG_STATIC(TAG_MeleeCombo, "Ability.Melee.Combo");
-
 
 
 UPBGameplayAbility_DodgeRoll::UPBGameplayAbility_DodgeRoll(const FObjectInitializer& ObjectInitializer)

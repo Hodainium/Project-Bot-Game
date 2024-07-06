@@ -79,8 +79,16 @@ void UPBHealthSet::PostGameplayEffectExecute(const FGameplayEffectModCallbackDat
 		FVector InstigatorLocation = TypedContext->GetEffectCauser()->GetActorLocation();
 		FVector TargetLocation = Data.Target.GetAvatarActor()->GetActorLocation();
 
+		FVector KnockbackDirection = (TargetLocation - InstigatorLocation).GetSafeNormal2D();
+
+		if(AssetTags.HasTagExact(PB_DamageType_Tags::TAG_DAMAGETYPE_EXPLOSION))
+		{
+			UE_LOGFMT(LogPBGame, Warning, "Knockback is explosive!");
+			KnockbackDirection = (TargetLocation - TypedContext->GetHitResult()->TraceStart).GetSafeNormal2D();
+		}
+
 		// make 70 Data.EvaluatedData.Magnitude 
-		FVector KnockbackDestination = TargetLocation + (TargetLocation - InstigatorLocation).GetSafeNormal2D() * Data.EvaluatedData.Magnitude; //70
+		FVector KnockbackDestination = TargetLocation + KnockbackDirection * Data.EvaluatedData.Magnitude; //70
 
 		LocationInfo->TargetLocation.LiteralTransform.SetTranslation(KnockbackDestination);
 
