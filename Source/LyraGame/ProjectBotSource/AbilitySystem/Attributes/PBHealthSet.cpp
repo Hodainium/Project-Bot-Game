@@ -83,7 +83,6 @@ void UPBHealthSet::PostGameplayEffectExecute(const FGameplayEffectModCallbackDat
 
 		if(AssetTags.HasTagExact(PB_DamageType_Tags::TAG_DAMAGETYPE_EXPLOSION))
 		{
-			UE_LOGFMT(LogPBGame, Warning, "Knockback is explosive!");
 			KnockbackDirection = (TargetLocation - TypedContext->GetHitResult()->TraceStart).GetSafeNormal2D();
 		}
 
