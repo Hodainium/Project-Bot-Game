@@ -44,6 +44,43 @@ struct TStructOpsTypeTraits<FGameplayAbilityTargetData_PBComboInput> : public TS
 };
 
 
+/**
+ *
+ */
+ /** Target data with just a source and target location in space */
+USTRUCT(BlueprintType)
+struct FGameplayAbilityTargetData_PBDirection : public FGameplayAbilityTargetData
+{
+	GENERATED_USTRUCT_BODY()
+
+	/** angle number to be converted back to rotation */
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = Targeting)
+	float Angle;
+
+	// -------------------------------------
+
+	virtual UScriptStruct* GetScriptStruct() const override
+	{
+		return FGameplayAbilityTargetData_PBDirection::StaticStruct();
+	}
+
+	virtual FString ToString() const override
+	{
+		return TEXT("FGameplayAbilityTargetData_PBDirection");
+	}
+
+	bool NetSerialize(FArchive& Ar, class UPackageMap* Map, bool& bOutSuccess);
+};
+
+template<>
+struct TStructOpsTypeTraits<FGameplayAbilityTargetData_PBDirection> : public TStructOpsTypeTraitsBase2<FGameplayAbilityTargetData_PBDirection>
+{
+	enum
+	{
+		WithNetSerializer = true	// For now this is REQUIRED for FGameplayAbilityTargetDataHandle net serialization to work
+	};
+};
+
 
 /** Target data with just a source and target location in space */
 USTRUCT(BlueprintType)

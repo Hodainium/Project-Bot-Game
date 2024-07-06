@@ -20,7 +20,6 @@ public:
 
 	ATTRIBUTE_ACCESSORS(UPBCombatSet, BaseKnockback);
 
-
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 protected:

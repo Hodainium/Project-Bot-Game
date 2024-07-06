@@ -56,9 +56,19 @@ namespace PB_SetByCaller_Tags
 
 namespace PB_Damage_Tags
 {
-	UE_DEFINE_GAMEPLAY_TAG(TAG_DAMAGE_IMMUNITY, "Damage.SelfDestruct");
-	UE_DEFINE_GAMEPLAY_TAG(TAG_DAMAGE_SELFDESTRUCT, "Damage.FellOutOfWorld");
+	UE_DEFINE_GAMEPLAY_TAG(TAG_DAMAGE_SELFDESTRUCT, "Damage.SelfDestruct");
 	UE_DEFINE_GAMEPLAY_TAG(TAG_DAMAGE_FELLOUTOFWORLD, "Damage.FellOutOfWorld");
+}
+
+namespace PB_Status_Tags
+{
+	UE_DEFINE_GAMEPLAY_TAG(TAG_DAMAGE_IMMUNITY, "GameplayEffect.Status.Damage.Immunity");
+	UE_DEFINE_GAMEPLAY_TAG(TAG_DAMAGE_INTANGIBLE, "GameplayEffect.Status.Damage.Intangible");
+}
+
+namespace PB_DamageType_Tags
+{
+	UE_DEFINE_GAMEPLAY_TAG(TAG_DAMAGETYPE_EXPLOSION, "GameplayEffect.DamageType.Explosion");
 }
 
 namespace PB_Cheat_Tags
@@ -70,12 +80,12 @@ namespace PB_Cheat_Tags
 
 namespace PB_Knockback_Tags
 {
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_KNOCKBACK_LEVEL_0, "Damage.KnockbackLevel.0", "Level 0 knockback");
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_KNOCKBACK_LEVEL_1, "Damage.KnockbackLevel.1", "Level 1 knockback");
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_KNOCKBACK_LEVEL_2, "Damage.KnockbackLevel.2", "Level 2 knockback");
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_KNOCKBACK_LEVEL_3, "Damage.KnockbackLevel.3", "Level 3 knockback");
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_KNOCKBACK_LEVEL_4, "Damage.KnockbackLevel.4", "Level 4 knockback");
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_KNOCKBACK_LEVEL_5, "Damage.KnockbackLevel.5", "Level 5 knockback");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_KNOCKBACK_LEVEL_0, "GameplayEffect.KnockbackLevel.0", "Level 0 knockback");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_KNOCKBACK_LEVEL_1, "GameplayEffect.KnockbackLevel.1", "Level 1 knockback");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_KNOCKBACK_LEVEL_2, "GameplayEffect.KnockbackLevel.2", "Level 2 knockback");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_KNOCKBACK_LEVEL_3, "GameplayEffect.KnockbackLevel.3", "Level 3 knockback");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_KNOCKBACK_LEVEL_4, "GameplayEffect.KnockbackLevel.4", "Level 4 knockback");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_KNOCKBACK_LEVEL_5, "GameplayEffect.KnockbackLevel.5", "Level 5 knockback");
 }
 
 namespace PB_MovementMode_Tags

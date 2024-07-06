@@ -56,7 +56,7 @@ bool UPBGameplayAbility_MeleeWeapon::CanActivateAbility(const FGameplayAbilitySp
 			bResult = false;
 		}
 	}
-	
+
 	return bResult;
 }
 
@@ -188,14 +188,14 @@ void UPBGameplayAbility_MeleeWeapon::StartMeleeWeaponTracing()
 
 	UPBMeleeWeaponInstance* Instance = GetMeleeWeaponInstance();
 
-	if(!Instance)
+	if (!Instance)
 	{
 		return;
 	}
 
 	TArray<AActor*> SpawnedActors = Instance->GetSpawnedActors();
 
-	if(IsLocallyControlled())
+	if (IsLocallyControlled())
 	{
 		UE_LOGFMT(LogPBGame, Warning, "Enabled melee trace2, size: {num}", SpawnedActors.Num());
 
@@ -268,7 +268,7 @@ void UPBGameplayAbility_MeleeWeapon::OnWeaponTickFinished(const TArray<FHitResul
 	{
 		for (const FHitResult& FoundHit : InHits)
 		{
-			if(FoundHit.GetActor() != GetAvatarActorFromActorInfo()) // Filter out owner pawn we hit this a lot during melee traces
+			if (FoundHit.GetActor() != GetAvatarActorFromActorInfo()) // Filter out owner pawn we hit this a lot during melee traces
 			{
 				FPBGameplayAbilityTargetData_MeleeHit* NewTargetData = new FPBGameplayAbilityTargetData_MeleeHit();
 				NewTargetData->HitResult = FoundHit;
@@ -279,7 +279,7 @@ void UPBGameplayAbility_MeleeWeapon::OnWeaponTickFinished(const TArray<FHitResul
 		}
 	}
 
-	if(TargetData.Num() > 0)
+	if (TargetData.Num() > 0)
 	{
 		// Send hit marker information
 		if (WeaponStateComponent != nullptr)
