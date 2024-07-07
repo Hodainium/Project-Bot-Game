@@ -105,6 +105,26 @@ void ULyraAbilitySet::GiveToAbilitySystem(ULyraAbilitySystemComponent* LyraASC, 
 		}
 	}
 
+	// Grant the attribute sets.
+	for (int32 SetIndex = 0; SetIndex < GrantedAttributes.Num(); ++SetIndex)
+	{
+		const FLyraAbilitySet_AttributeSet& SetToGrant = GrantedAttributes[SetIndex];
+
+		if (!IsValid(SetToGrant.AttributeSet))
+		{
+			UE_LOG(LogLyraAbilitySystem, Error, TEXT("GrantedAttributes[%d] on ability set [%s] is not valid"), SetIndex, *GetNameSafe(this));
+			continue;
+		}
+
+		UAttributeSet* NewSet = NewObject<UAttributeSet>(LyraASC->GetOwner(), SetToGrant.AttributeSet);
+		LyraASC->AddAttributeSetSubobject(NewSet);
+
+		if (OutGrantedHandles)
+		{
+			OutGrantedHandles->AddAttributeSet(NewSet);
+		}
+	}
+
 	// Grant the gameplay effects.
 	for (int32 EffectIndex = 0; EffectIndex < GrantedGameplayEffects.Num(); ++EffectIndex)
 	{
@@ -125,24 +145,6 @@ void ULyraAbilitySet::GiveToAbilitySystem(ULyraAbilitySystemComponent* LyraASC, 
 		}
 	}
 
-	// Grant the attribute sets.
-	for (int32 SetIndex = 0; SetIndex < GrantedAttributes.Num(); ++SetIndex)
-	{
-		const FLyraAbilitySet_AttributeSet& SetToGrant = GrantedAttributes[SetIndex];
-
-		if (!IsValid(SetToGrant.AttributeSet))
-		{
-			UE_LOG(LogLyraAbilitySystem, Error, TEXT("GrantedAttributes[%d] on ability set [%s] is not valid"), SetIndex, *GetNameSafe(this));
-			continue;
-		}
-
-		UAttributeSet* NewSet = NewObject<UAttributeSet>(LyraASC->GetOwner(), SetToGrant.AttributeSet);
-		LyraASC->AddAttributeSetSubobject(NewSet);
-
-		if (OutGrantedHandles)
-		{
-			OutGrantedHandles->AddAttributeSet(NewSet);
-		}
-	}
+	
 }
 
