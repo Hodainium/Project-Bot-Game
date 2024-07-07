@@ -19,10 +19,10 @@ namespace LyraCharacter
 	FAutoConsoleVariableRef CVar_GroundTraceDistance(TEXT("LyraCharacter.GroundTraceDistance"), GroundTraceDistance, TEXT("Distance to trace down when generating ground information."), ECVF_Cheat);
 };
 
-
 ULyraCharacterMovementComponent::ULyraCharacterMovementComponent(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
+	MaxWalkSpeedSprinting = 600.f;
 }
 
 void ULyraCharacterMovementComponent::SimulateMovement(float DeltaTime)
@@ -138,11 +138,21 @@ float ULyraCharacterMovementComponent::GetMaxSpeed() const
 		}
 	}
 
+	if (IsSprinting())
+	{
+		return MaxWalkSpeedSprinting;
+	}
+
 	return Super::GetMaxSpeed();
 }
 
 float ULyraCharacterMovementComponent::GetMaxAcceleration() const
 {
+	/*if (IsSprinting() && (!bUseMaxAccelerationSprintingOnlyAtSpeed || IsSprintingAtSpeed()))
+	{
+		return MaxAccelerationSprinting;
+	}*/
+
 	if (UAbilitySystemComponent* ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(GetOwner()))
 	{
 		if (ASC->HasMatchingGameplayTag(TAG_Gameplay_MovementStopped))
@@ -157,4 +167,207 @@ float ULyraCharacterMovementComponent::GetMaxAcceleration() const
 	}
 
 	return Super::GetMaxAcceleration();
+}
+
+void ULyraCharacterMovementComponent::FPBSavedMove::Clear()
+{
+	Super::Clear();
+
+	SavedWantsToSprint = false;
+}
+
+uint8 ULyraCharacterMovementComponent::FPBSavedMove::GetCompressedFlags() const
+{
+	uint8 Result = Super::GetCompressedFlags();
+
+	if (SavedWantsToSprint)
+	{
+		Result |= FLAG_Custom_0;
+	}
+
+	return Result;
+}
+
+bool ULyraCharacterMovementComponent::FPBSavedMove::CanCombineWith(const FSavedMovePtr& NewMove, ACharacter* Character, float MaxDelta) const
+{
+	//Set which moves can be combined together. This will depend on the bit flags that are used.
+	if (SavedWantsToSprint != ((FPBSavedMove*)&NewMove)->SavedWantsToSprint)
+	{
+		return false;
+	}
+
+	return Super::CanCombineWith(NewMove, Character, MaxDelta);
+}
+
+void ULyraCharacterMovementComponent::FPBSavedMove::SetMoveFor(ACharacter* Character, float InDeltaTime, FVector const& NewAccel, FNetworkPredictionData_Client_Character& ClientData)
+{
+	Super::SetMoveFor(Character, InDeltaTime, NewAccel, ClientData);
+
+	ULyraCharacterMovementComponent* CharacterMovement = Cast<ULyraCharacterMovementComponent>(Character->GetCharacterMovement());
+	if (CharacterMovement)
+	{
+		SavedWantsToSprint = CharacterMovement->bWantsToSprint;
+	}
+}
+
+void ULyraCharacterMovementComponent::FPBSavedMove::PrepMoveFor(ACharacter* Character)
+{
+	Super::PrepMoveFor(Character);
+
+	ULyraCharacterMovementComponent* CharacterMovement = Cast<ULyraCharacterMovementComponent>(Character->GetCharacterMovement());
+	if (CharacterMovement)
+	{
+	}
+}
+
+ULyraCharacterMovementComponent::FPBNetworkPredictionData_Client::FPBNetworkPredictionData_Client(const UCharacterMovementComponent& ClientMovement)
+	: Super(ClientMovement)
+{
+}
+
+FSavedMovePtr ULyraCharacterMovementComponent::FPBNetworkPredictionData_Client::AllocateNewMove()
+{
+	return MakeShared<FPBSavedMove>();
+}
+
+FNetworkPredictionData_Client* ULyraCharacterMovementComponent::GetPredictionData_Client() const
+{
+	if (ClientPredictionData == nullptr)
+	{
+		ULyraCharacterMovementComponent* MutableThis = const_cast<ULyraCharacterMovementComponent*>(this);
+		MutableThis->ClientPredictionData = new FPBNetworkPredictionData_Client(*this);
+	}
+
+	return ClientPredictionData;
+}
+
+void ULyraCharacterMovementComponent::UpdateFromCompressedFlags(uint8 Flags)
+{
+	Super::UpdateFromCompressedFlags(Flags);
+
+	//The Flags parameter contains the compressed input flags that are stored in the saved move.
+	//UpdateFromCompressed flags simply copies the flags from the saved move into the movement component.
+	//It basically just resets the movement component to the state when the move was made so it can simulate from there.
+	bWantsToSprint = (Flags & FSavedMove_Character::FLAG_Custom_0) != 0;
+}
+
+void ULyraCharacterMovementComponent::UpdateCharacterStateBeforeMovement(float DeltaSeconds)
+{
+	// Proxies get replicated Sprint state.
+	if (CharacterOwner->GetLocalRole() != ROLE_SimulatedProxy)
+	{
+		// Check for a change in Sprint state. Players toggle Sprint by changing bWantsToSprint.
+		const bool bIsSprinting = IsSprinting();
+		if (bIsSprinting && (!bWantsToSprint || !CanSprintInCurrentState()))
+		{
+			UnSprint(false);
+		}
+		else if (!bIsSprinting && bWantsToSprint && CanSprintInCurrentState())
+		{
+			Sprint(false);
+		}
+	}
+
+	Super::UpdateCharacterStateBeforeMovement(DeltaSeconds);
+}
+
+void ULyraCharacterMovementComponent::UpdateCharacterStateAfterMovement(float DeltaSeconds)
+{
+	// Proxies get replicated Sprint state.
+	if (CharacterOwner->GetLocalRole() != ROLE_SimulatedProxy)
+	{
+		// UnSprint if no longer allowed to be Sprinting
+		if (IsSprinting() && !CanSprintInCurrentState())
+		{
+			UnSprint(false);
+		}
+	}
+
+	Super::UpdateCharacterStateAfterMovement(DeltaSeconds);
+}
+
+bool ULyraCharacterMovementComponent::IsSprinting() const
+{
+	return LyraCharacterOwner && LyraCharacterOwner->bIsSprinting;
+}
+
+void ULyraCharacterMovementComponent::Sprint(bool bClientSimulation)
+{
+	if (!HasValidData())
+	{
+		return;
+	}
+
+	if (!bClientSimulation && !CanSprintInCurrentState())
+	{
+		return;
+	}
+
+	if (!bClientSimulation)
+	{
+		LyraCharacterOwner->bIsSprinting = true;
+	}
+	LyraCharacterOwner->OnStartSprint();
+}
+
+void ULyraCharacterMovementComponent::UnSprint(bool bClientSimulation)
+{
+	if (!HasValidData())
+	{
+		return;
+	}
+
+	if (!bClientSimulation)
+	{
+		LyraCharacterOwner->bIsSprinting = false;
+	}
+	LyraCharacterOwner->OnEndSprint();
+}
+
+bool ULyraCharacterMovementComponent::ClientUpdatePositionAfterServerUpdate()
+{
+	const bool bRealSprint = bWantsToSprint;
+	const bool bResult = Super::ClientUpdatePositionAfterServerUpdate();
+	bWantsToSprint = bRealSprint;
+
+	return bResult;
+}
+
+bool ULyraCharacterMovementComponent::CanSprintInCurrentState() const
+{
+	/*if (!UpdatedComponent || UpdatedComponent->IsSimulatingPhysics())
+	{
+		return false;
+	}
+
+	if (!IsFalling() && !IsMovingOnGround())
+	{
+		return false;
+	}*/
+
+	/*if (!IsSprintWithinAllowableInputAngle())
+	{
+		return false;
+	}*/
+
+	return true;
+}
+
+bool ULyraCharacterMovementComponent::HasValidData() const
+{
+	return Super::HasValidData() && IsValid(LyraCharacterOwner);
+}
+
+void ULyraCharacterMovementComponent::PostLoad()
+{
+	Super::PostLoad();
+
+	LyraCharacterOwner = Cast<ALyraCharacter>(PawnOwner);
+}
+
+void ULyraCharacterMovementComponent::SetUpdatedComponent(USceneComponent* NewUpdatedComponent)
+{
+	Super::SetUpdatedComponent(NewUpdatedComponent);
+
+	LyraCharacterOwner = Cast<ALyraCharacter>(PawnOwner);
 }

@@ -224,4 +224,46 @@ private:
 
 	UFUNCTION()
 	void OnRep_MyTeamID(FGenericTeamId OldTeamID);
+
+public:
+
+	/** Set by character movement to specify that this Character is currently Sprinting. */
+	UPROPERTY(BlueprintReadOnly, replicatedUsing = OnRep_IsSprinting, Category = Character)
+	uint32 bIsSprinting : 1;
+
+	/** Handle Crouching replicated from server */
+	UFUNCTION()
+	virtual void OnRep_IsSprinting();
+
+	/**
+	 * Request the character to start Sprinting. The request is processed on the next update of the CharacterMovementComponent.
+	 * @see OnStartSprint
+	 * @see IsSprinting
+	 * @see CharacterMovement->WantsToSprint
+	 */
+	UFUNCTION(BlueprintCallable, Category = Character, meta = (HidePin = "bClientSimulation"))
+	virtual void Sprint(bool bClientSimulation = false);
+
+	/**
+	 * Request the character to stop Sprinting. The request is processed on the next update of the CharacterMovementComponent.
+	 * @see OnEndSprint
+	 * @see IsSprinting
+	 * @see CharacterMovement->WantsToSprint
+	 */
+	UFUNCTION(BlueprintCallable, Category = Character, meta = (HidePin = "bClientSimulation"))
+	virtual void UnSprint(bool bClientSimulation = false);
+
+	/** Called when Character stops Sprinting. Called on non-owned Characters through bIsSprinting replication. */
+	virtual void OnEndSprint();
+
+	/** Event when Character stops Sprinting. */
+	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnEndSprint", ScriptName = "OnEndSprint"))
+	void K2_OnEndSprint();
+
+	/** Called when Character Sprintes. Called on non-owned Characters through bIsSprinting replication. */
+	virtual void OnStartSprint();
+
+	/** Event when Character Sprintes. */
+	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnStartSprint", ScriptName = "OnStartSprint"))
+	void K2_OnStartSprint();
 };

@@ -132,6 +132,7 @@ void ALyraCharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& Out
 
 	DOREPLIFETIME_CONDITION(ThisClass, ReplicatedAcceleration, COND_SimulatedOnly);
 	DOREPLIFETIME(ThisClass, MyTeamID)
+	DOREPLIFETIME_CONDITION(ThisClass, bIsSprinting, COND_SimulatedOnly);
 }
 
 void ALyraCharacter::PreReplication(IRepChangedPropertyTracker& ChangedPropertyTracker)
@@ -522,6 +523,56 @@ void ALyraCharacter::OnControllerChangedTeam(UObject* TeamAgent, int32 OldTeam, 
 void ALyraCharacter::OnRep_MyTeamID(FGenericTeamId OldTeamID)
 {
 	ConditionalBroadcastTeamChanged(this, OldTeamID, MyTeamID);
+}
+
+void ALyraCharacter::OnRep_IsSprinting()
+{
+	ULyraCharacterMovementComponent* LyraMoveComp = CastChecked<ULyraCharacterMovementComponent>(GetCharacterMovement());
+
+	if (LyraMoveComp)
+	{
+		if (bIsSprinting)
+		{
+			LyraMoveComp->bWantsToSprint = true;
+			LyraMoveComp->Sprint(true);
+		}
+		else
+		{
+			LyraMoveComp->bWantsToSprint = false;
+			LyraMoveComp->UnSprint(true);
+		}
+		LyraMoveComp->bNetworkUpdateReceived = true;
+	}
+}
+
+void ALyraCharacter::Sprint(bool bClientSimulation)
+{
+	ULyraCharacterMovementComponent* LyraMoveComp = CastChecked<ULyraCharacterMovementComponent>(GetCharacterMovement());
+
+	if (LyraMoveComp)
+	{
+		LyraMoveComp->bWantsToSprint = true;
+	}
+}
+
+void ALyraCharacter::UnSprint(bool bClientSimulation)
+{
+	ULyraCharacterMovementComponent* LyraMoveComp = CastChecked<ULyraCharacterMovementComponent>(GetCharacterMovement());
+
+	if (LyraMoveComp)
+	{
+		LyraMoveComp->bWantsToSprint = false;
+	}
+}
+
+void ALyraCharacter::OnEndSprint()
+{
+	K2_OnEndSprint();
+}
+
+void ALyraCharacter::OnStartSprint()
+{
+	K2_OnStartSprint();
 }
 
 bool ALyraCharacter::UpdateSharedReplication()
