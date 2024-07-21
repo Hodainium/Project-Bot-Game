@@ -447,15 +447,40 @@ void UPBItemSlotComponent::EquipItemInSlot(EPBInventorySlotType SlotType)
 
 		if(NullEquipmentStack.Num() > 0) 
 		{
-			UPBWeaponItemDefinition* NullWeaponDef = nullptr; 
+			UPBWeaponItemDefinition* NullWeaponDef = nullptr;
 
-			for(int i = 0; i < NullEquipmentStack.Num(); i++)
+			switch(SlotType)
 			{
-				if(NullEquipmentStack[NullEquipmentStack.Num() - 1 - i].WeaponDefinition != nullptr)
+			case EPBInventorySlotType::Weapon_L:
+			{
+				for (int i = 0; i < NullEquipmentStack.Num(); i++)
 				{
-					NullWeaponDef = NullEquipmentStack[NullEquipmentStack.Num() - 1 - i].WeaponDefinition;
-					break;
+					if (NullEquipmentStack[NullEquipmentStack.Num() - 1 - i].LeftWeaponDefinition != nullptr)
+					{
+						NullWeaponDef = NullEquipmentStack[NullEquipmentStack.Num() - 1 - i].LeftWeaponDefinition;
+						break;
+					}
 				}
+
+				break;
+			}
+			case EPBInventorySlotType::Weapon_R:
+			{
+				for (int i = 0; i < NullEquipmentStack.Num(); i++)
+				{
+					if (NullEquipmentStack[NullEquipmentStack.Num() - 1 - i].RightWeaponDefinition != nullptr)
+					{
+						NullWeaponDef = NullEquipmentStack[NullEquipmentStack.Num() - 1 - i].RightWeaponDefinition;
+						break;
+					}
+				}
+
+				break;
+			}
+			default:
+			{
+				UE_LOG(LogPBGame, Error, TEXT("ITEMSLOTCOMP::BrUPB you didn't include equipItemInSlot logic. For item: %s"), *SlotItem->GetItemDefinition()->ItemName.ToString());
+			}
 			}
 
 			if(NullWeaponDef)
@@ -707,12 +732,12 @@ void UPBItemSlotComponent::OnRep_SlotStruct_Consumable(FPBInventorySlotStruct& P
 	}
 }
 
-void UPBItemSlotComponent::AddNullEquipment(UPBWeaponItemDefinition* InEquipment)
+void UPBItemSlotComponent::AddNullEquipment(FPBNullEquipmentEntry InNullEquipment)
 {
 	bool bFound = false;
 	for (FPBNullEquipmentEntry& Entry : NullEquipmentStack)
 	{
-		if(Entry.WeaponDefinition == InEquipment)
+		if(Entry == InNullEquipment)
 		{
 			Entry.StackNumber += 1;
 			bFound = true;
@@ -722,17 +747,17 @@ void UPBItemSlotComponent::AddNullEquipment(UPBWeaponItemDefinition* InEquipment
 
 	if(!bFound)
 	{
-		NullEquipmentStack.Add(FPBNullEquipmentEntry(InEquipment));
+		NullEquipmentStack.Add(InNullEquipment);
 	}
 
 	HandleNullEquipmentChange();
 }
 
-void UPBItemSlotComponent::RemoveNullEquipment(UPBWeaponItemDefinition* EquipmentToRemove)
+void UPBItemSlotComponent::RemoveNullEquipment(FPBNullEquipmentEntry InNullEquipment)
 {
 	for (FPBNullEquipmentEntry& Entry : NullEquipmentStack)
 	{
-		if (Entry.WeaponDefinition == EquipmentToRemove)
+		if (Entry == InNullEquipment)
 		{
 			Entry.StackNumber -= 1;
 			HandleNullEquipmentChange();

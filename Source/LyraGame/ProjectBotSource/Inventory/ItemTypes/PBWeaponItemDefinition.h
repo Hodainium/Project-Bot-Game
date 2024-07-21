@@ -54,4 +54,12 @@ public:
 	virtual FText GetDisplayItemTypeText() const override;
 
 	virtual void GetCompatibleSlotTypes(TArray<EPBInventorySlotType>& CompatibleTypes) const override;
+
+	UFUNCTION(BlueprintCallable)
+	UPBEquipmentDefinition* GetEquipmentDefinitionTwoHanded() const;
+
+protected:
+	/** Equipment to grant and equip when two-handing. Only available on right-handed weapons */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Equipment, meta = (EditCondition = "WeaponHandedType == EPBWeaponHandedType::RightHanded"))
+	TObjectPtr<UPBEquipmentDefinition> TwoHandedEquipmentDefinition;
 };

@@ -42,3 +42,8 @@ void UPBWeaponItemDefinition::GetCompatibleSlotTypes(TArray<EPBInventorySlotType
 		break;
 	}
 }
+
+UPBEquipmentDefinition* UPBWeaponItemDefinition::GetEquipmentDefinitionTwoHanded() const
+{
+	return TwoHandedEquipmentDefinition;
+}

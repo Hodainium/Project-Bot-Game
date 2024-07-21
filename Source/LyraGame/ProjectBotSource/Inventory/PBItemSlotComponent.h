@@ -79,21 +79,31 @@ public:
 
 	FPBNullEquipmentEntry()
 	{
-		WeaponDefinition = nullptr;
+		LeftWeaponDefinition = nullptr;
+		RightWeaponDefinition = nullptr;
 		StackNumber = 0;
 	}
 
-	FPBNullEquipmentEntry(UPBWeaponItemDefinition* WeaponDef)
+	FPBNullEquipmentEntry(UPBWeaponItemDefinition* LeftWeaponDef, UPBWeaponItemDefinition* RightWeaponDef)
 	{
-		WeaponDefinition = WeaponDef;
+		LeftWeaponDefinition = LeftWeaponDef;
+		RightWeaponDefinition = RightWeaponDef;
 		StackNumber = 1;
 	}
 
 	UPROPERTY(BlueprintReadWrite, Category = Inventory)
-	TObjectPtr<UPBWeaponItemDefinition> WeaponDefinition;
+	TObjectPtr<UPBWeaponItemDefinition> LeftWeaponDefinition;
+
+	UPROPERTY(BlueprintReadWrite, Category = Inventory)
+	TObjectPtr<UPBWeaponItemDefinition> RightWeaponDefinition;
 
 	UPROPERTY(BlueprintReadWrite, Category = Inventory)
 	uint8 StackNumber;
+
+	bool operator==(const FPBNullEquipmentEntry& Other) const
+	{
+		return (LeftWeaponDefinition == Other.LeftWeaponDefinition) && (RightWeaponDefinition == Other.RightWeaponDefinition);
+	}
 };
 
 
@@ -161,10 +171,10 @@ public:
 	void AddItemToSlot(EPBInventorySlotType SlotType, int32 SlotIndex, UPBInventoryItemInstance* Item);
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly)
-	void AddNullEquipment(UPBWeaponItemDefinition* InEquipment);
+	void AddNullEquipment(FPBNullEquipmentEntry InNullEquipment);
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly)
-	void RemoveNullEquipment(UPBWeaponItemDefinition* EquipmentToRemove);
+	void RemoveNullEquipment(FPBNullEquipmentEntry InNullEquipment);
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly)
 	void RemoveItemAtSlotIndex(EPBInventorySlotType SlotType, int32 SlotIndex);
