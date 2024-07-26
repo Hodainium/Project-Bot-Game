@@ -25,6 +25,7 @@ UPBItemSlotComponent::UPBItemSlotComponent(const FObjectInitializer& ObjectIniti
 	TemporaryStartingSlots = 1;
 	UseItemStartingSlots = 1;
 	ConsumableStartingSlots = 3;
+	bTwoHanding = false;
 }
 
 void UPBItemSlotComponent::BeginPlay()
@@ -107,6 +108,12 @@ void UPBItemSlotComponent::CycleActiveSlotBackward(EPBInventorySlotType SlotType
 	SetActiveSlotIndexForEnum(SlotType, GetNextFreeItemSlot(SlotType));
 }
 
+void UPBItemSlotComponent::SetTwoHanding_Implementation(bool bInTwoHanding)
+{
+	bTwoHanding = bInTwoHanding;
+	OnRep_bTwoHanding();
+}
+
 void UPBItemSlotComponent::Client_OpenInventory_Implementation()
 {
 	UE_LOGFMT(LogPBGame, Warning, "Inventory collect rpc client recieved");
@@ -142,6 +149,11 @@ UPBInventoryItemInstance* UPBItemSlotComponent::GetActiveSlotItem(EPBInventorySl
 	const FPBInventorySlotStruct& Slots = GetSlotStructForEnum_Const(SlotType);
 
 	return Slots.SlotArray.IsValidIndex(Slots.ActiveSlotIndex) ? Slots.SlotArray[Slots.ActiveSlotIndex] : nullptr;
+}
+
+bool UPBItemSlotComponent::GetIsTwoHanding() const
+{
+	return bTwoHanding;
 }
 
 int32 UPBItemSlotComponent::GetNextFreeItemSlot(EPBInventorySlotType SlotType) const
@@ -422,7 +434,27 @@ void UPBItemSlotComponent::EquipItemInSlot(EPBInventorySlotType SlotType)
 		case EPBItemType::Consumable:
 		case EPBItemType::UseItem:
 		{
-			if (UPBEquippableItem* ItemDef = Cast<UPBEquippableItem>(SlotItem->GetItemDefinition()))
+			if(SlotType == EPBInventorySlotType::Weapon_R)
+			{
+				if (UPBWeaponItemDefinition* WeaponDef = Cast<UPBWeaponItemDefinition>(SlotItem->GetItemDefinition()))
+				{
+					if (UPBEquipmentManagerComponent* EquipmentManager = FindEquipmentComponent())
+					{
+						UE_LOGFMT(LogPBGame, Warning, "EquipComp is valid");
+
+						//Slots.EquippedItem = EquipmentManager->EquipItem(ItemDef->WeaponDefinition);
+						if(bTwoHanding)
+						{
+							Slots.EquippedItem = EquipmentManager->EquipItem(WeaponDef->GetEquipmentDefinitionTwoHanded(), SlotItem);
+						}
+						else
+						{
+							Slots.EquippedItem = EquipmentManager->EquipItem(WeaponDef->GetEquipmentDefinition(), SlotItem);
+						}
+					}
+				}
+			}
+			else if (UPBEquippableItem* ItemDef = Cast<UPBEquippableItem>(SlotItem->GetItemDefinition()))
 			{
 				if (UPBEquipmentManagerComponent* EquipmentManager = FindEquipmentComponent())
 				{
@@ -640,6 +672,20 @@ bool UPBItemSlotComponent::IsIndexCompatibleWithSlotType(FPBInventorySlotIndex I
 
 	//If item is nullptr it's compatible with any slot type so yes
 	return true;
+}
+
+void UPBItemSlotComponent::OnRep_bTwoHanding()
+{
+	if(bTwoHanding)
+	{
+		UnequipItemInSlot(EPBInventorySlotType::Weapon_L);
+	}
+	else
+	{
+		EquipItemInSlot(EPBInventorySlotType::Weapon_L);
+	}
+	UnequipItemInSlot(EPBInventorySlotType::Weapon_R);
+	EquipItemInSlot(EPBInventorySlotType::Weapon_R);
 }
 
 void UPBItemSlotComponent::OnRep_SlotStruct_Weapon_L(FPBInventorySlotStruct& PreviousValue)

@@ -129,6 +129,9 @@ public:
 	void CycleActiveSlotBackward(EPBInventorySlotType SlotType);
 
 	UFUNCTION(Server, Reliable, BlueprintCallable, Category = "Slots")
+	void SetTwoHanding(bool bInTwoHanding);
+
+	UFUNCTION(Server, Reliable, BlueprintCallable, Category = "Slots")
 	void SetActiveSlotIndexForEnum(EPBInventorySlotType SlotType, int32 NewIndex);
 
 	UFUNCTION(Client, Reliable, BlueprintCallable, Category = "Slots")
@@ -157,6 +160,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintPure = false)
 	UPBInventoryItemInstance* GetActiveSlotItem(EPBInventorySlotType SlotType) const;
+
+	UFUNCTION(BlueprintCallable, Category = "ItemSlots|Net")
+	bool GetIsTwoHanding() const;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure = false)
 	int32 GetNextFreeItemSlot(EPBInventorySlotType SlotType) const;
@@ -247,6 +253,12 @@ protected:
 
 	UPROPERTY(ReplicatedUsing = OnRep_SlotStruct_Weapon_L)
 	FPBInventorySlotStruct SlotStruct_Weapon_L;
+
+	UFUNCTION()
+	void OnRep_bTwoHanding();
+
+	UPROPERTY(ReplicatedUsing = OnRep_bTwoHanding)
+	bool bTwoHanding;
 
 	UFUNCTION()
 	void OnRep_SlotStruct_Weapon_L(FPBInventorySlotStruct& PreviousValue);
