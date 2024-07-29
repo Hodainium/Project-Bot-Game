@@ -125,6 +125,7 @@ void UPBGameplayAbility_MeleeWeapon::OnTargetDataReadyCallback(const FGameplayAb
 			FGameplayAbilityTargetData_PBComboInput* PBMeleeInput = static_cast<FGameplayAbilityTargetData_PBComboInput*>(LocalTargetDataHandle.Get(0));
 
 			//Execute BP_HandleNewCombo
+			CommitAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo);
 			OnComboTargetDataReady(PBMeleeInput->Combo);
 			MyAbilityComponent->ConsumeClientReplicatedTargetData(CurrentSpecHandle, CurrentActivationInfo.GetActivationPredictionKey());
 			return;
@@ -159,7 +160,7 @@ void UPBGameplayAbility_MeleeWeapon::OnTargetDataReadyCallback(const FGameplayAb
 
 
 		// See if we still have ammo
-		if (bIsTargetDataValid && CommitAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo))
+		if (bIsTargetDataValid) // && CommitAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo)
 		{
 			// We fired the weapon, add spread
 			UPBMeleeWeaponInstance* WeaponData = GetMeleeWeaponInstance();
