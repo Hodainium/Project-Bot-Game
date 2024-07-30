@@ -70,6 +70,9 @@ public:
 		ItemType = EPBItemType::UndefinedType;
 	}
 
+	UPROPERTY(EditDefaultsOnly, Category = Equipment)
+	TMap<FGameplayTag, int32> InitialItemStats;
+
 	/** Type of this item, set in native parent class */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Item, AssetRegistrySearchable)
 	EPBItemType ItemType;

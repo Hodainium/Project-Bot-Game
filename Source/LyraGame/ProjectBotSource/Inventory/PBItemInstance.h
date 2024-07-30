@@ -8,6 +8,7 @@
 #include "UObject/NoExportTypes.h"
 #include "PBItemInstance.generated.h"
 
+enum class EPBInventorySlotType : uint8;
 enum class EPBItemQuality : uint8;
 enum class EPBItemType : uint8;
 class UPBItemModInstance;
@@ -29,6 +30,9 @@ class LYRAGAME_API UPBInventoryItemInstance : public UObject
 public:
 
 	UPBInventoryItemInstance(const FObjectInitializer& ObjectInitializer);
+
+	UPROPERTY(BlueprintAssignable)
+	FOnTagStackChanged OnItemTagStackChanged;
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	static UPBInventoryItemInstance* DuplicateItemInstance(UPBInventoryItemInstance* Instance, UObject* NewOuter);
@@ -106,6 +110,11 @@ public:
 	{
 		return (ResultClass*)FindFragmentByClass(ResultClass::StaticClass());
 	}
+
+protected:
+
+	UFUNCTION()
+	void OnStatTagChange(FGameplayTag Tag, int32 Count);
 
 private:
 	void SetItemDef(UPBItemDefinition* InDef);

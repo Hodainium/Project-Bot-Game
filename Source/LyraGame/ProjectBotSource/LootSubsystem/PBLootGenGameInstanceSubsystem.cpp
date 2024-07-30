@@ -76,13 +76,6 @@ UPBInventoryItemInstance* UPBLootGenGameInstanceSubsystem::GenerateItemInstance(
 
 	UPBInventoryItemInstance* Instance = NewObject<UPBInventoryItemInstance>(Outer);
 	Instance->SetItemDef(ItemDef);
-	for (UPBInventoryItemFragment* Fragment : ItemDef->Fragments)
-	{
-		if (Fragment != nullptr)
-		{
-			Fragment->OnInstanceCreated(Instance);
-		}
-	}
 
 	EPBItemQuality ItemQuality = GenerateItemQuality();
 	Instance->SetItemQuality(ItemQuality);

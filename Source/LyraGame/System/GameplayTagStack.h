@@ -10,6 +10,9 @@
 struct FGameplayTagStackContainer;
 struct FNetDeltaSerializeInfo;
 
+// Delegate signature
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnTagStackChanged, FGameplayTag, Tag, int32, NewCount);
+
 /**
  * Represents one stack of a gameplay tag (tag + count)
  */
@@ -79,6 +82,9 @@ public:
 	{
 		return FFastArraySerializer::FastArrayDeltaSerialize<FGameplayTagStack, FGameplayTagStackContainer>(Stacks, DeltaParms, *this);
 	}
+
+	UPROPERTY(BlueprintAssignable)
+	FOnTagStackChanged OnTagStackChanged;
 
 private:
 	// Replicated list of gameplay tag stacks

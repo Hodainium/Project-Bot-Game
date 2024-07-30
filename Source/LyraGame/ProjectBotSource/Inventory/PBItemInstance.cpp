@@ -205,9 +205,30 @@ const UPBInventoryItemFragment* UPBInventoryItemInstance::FindFragmentByClass(
 	return nullptr;
 }
 
+void UPBInventoryItemInstance::OnStatTagChange(FGameplayTag Tag, int32 Count)
+{
+	UE_LOGFMT(LogPBGame, Warning, "Stat tag is being broadcasted");
+	OnItemTagStackChanged.Broadcast(Tag, Count);
+}
+
 void UPBInventoryItemInstance::SetItemDef(UPBItemDefinition* InDef)
 {
 	ItemDefinition = InDef;
+
+	for (UPBInventoryItemFragment* Fragment : InDef->Fragments)
+	{
+		if (Fragment != nullptr)
+		{
+			Fragment->OnInstanceCreated(this);
+		}
+	}
+
+	StatTags.OnTagStackChanged.AddUniqueDynamic(this, &ThisClass::OnStatTagChange);
+
+	for (const auto& KVP : InDef->InitialItemStats)
+	{
+		AddStatTagStack(KVP.Key, KVP.Value);
+	}
 }
 
 void UPBInventoryItemInstance::SetItemQuality(EPBItemQuality InQuality)

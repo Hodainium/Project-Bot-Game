@@ -2,6 +2,8 @@
 
 #include "GameplayTagStack.h"
 
+#include "Logging/StructuredLog.h"
+#include "ProjectBotSource/Logs/PBLogChannels.h"
 #include "UObject/Stack.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(GameplayTagStack)
@@ -42,6 +44,8 @@ void FGameplayTagStackContainer::AddStack(FGameplayTag Tag, int32 StackCount)
 		FGameplayTagStack& NewStack = Stacks.Emplace_GetRef(Tag, StackCount);
 		MarkItemDirty(NewStack);
 		TagToCountMap.Add(Tag, StackCount);
+
+		OnTagStackChanged.Broadcast(Tag, StackCount);
 	}
 }
 
@@ -66,6 +70,7 @@ void FGameplayTagStackContainer::RemoveStack(FGameplayTag Tag, int32 StackCount)
 					It.RemoveCurrent();
 					TagToCountMap.Remove(Tag);
 					MarkArrayDirty();
+					OnTagStackChanged.Broadcast(Tag, 0);
 				}
 				else
 				{
@@ -73,7 +78,11 @@ void FGameplayTagStackContainer::RemoveStack(FGameplayTag Tag, int32 StackCount)
 					Stack.StackCount = NewCount;
 					TagToCountMap[Tag] = NewCount;
 					MarkItemDirty(Stack);
+					OnTagStackChanged.Broadcast(Tag, NewCount);
 				}
+
+				
+
 				return;
 			}
 		}
@@ -104,6 +113,7 @@ void FGameplayTagStackContainer::PostReplicatedChange(const TArrayView<int32> Ch
 	{
 		const FGameplayTagStack& Stack = Stacks[Index];
 		TagToCountMap[Stack.Tag] = Stack.StackCount;
+		OnTagStackChanged.Broadcast(Stack.Tag, Stack.StackCount);
 	}
 }
 

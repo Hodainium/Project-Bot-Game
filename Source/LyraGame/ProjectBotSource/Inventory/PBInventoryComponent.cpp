@@ -5,9 +5,11 @@
 #include "NativeGameplayTags.h"
 #include "Engine/ActorChannel.h"
 #include "GameFramework/GameplayMessageSubsystem.h"
+#include "Logging/StructuredLog.h"
 #include "ProjectBotSource/Inventory/PBItemDefinition.h"
 #include "ProjectBotSource/Inventory/PBItemInstance.h"
 #include "Net/UnrealNetwork.h"
+#include "ProjectBotSource/Logs/PBLogChannels.h"
 #include "ProjectBotSource/Modifiers/PBItemModInstance.h"
 
 UE_DEFINE_GAMEPLAY_TAG(TAG_Inventory_Message_StackChanged, "Inventory.Message.StackChanged");
@@ -128,13 +130,6 @@ UPBInventoryItemInstance* FPBInventoryList::AddEntry(UPBItemDefinition* ItemDef,
 	FPBInventoryEntry& NewEntry = Entries.AddDefaulted_GetRef();
 	NewEntry.Instance = NewObject<UPBInventoryItemInstance>(OwnerComponent->GetOwner());  //@TODO: Using the actor instead of component as the outer due to UE-127172
 	NewEntry.Instance->SetItemDef(ItemDef);
-	for (UPBInventoryItemFragment* Fragment : ItemDef->Fragments)
-	{
-		if (Fragment != nullptr)
-		{
-			Fragment->OnInstanceCreated(NewEntry.Instance);
-		}
-	}
 	NewEntry.StackCount = StackCount;
 	Result = NewEntry.Instance;
 
@@ -273,20 +268,22 @@ UPBInventoryItemInstance* UPBInventoryComponent::FindFirstItemStackByDefinition(
 int32 UPBInventoryComponent::GetTotalItemCountByDefinition(UPBItemDefinition* ItemDef) const
 {
 	int32 TotalCount = 0;
+	UE_LOGFMT(LogPBGame, Warning, "Called check cost69");
 	for (const FPBInventoryEntry& Entry : InventoryList.Entries)
 	{
 		UPBInventoryItemInstance* Instance = Entry.Instance;
 
 		if (IsValid(Instance))
 		{
-			if (Instance->GetItemDefinition() == ItemDef)
+			UE_LOGFMT(LogPBGame, Warning, "Getting total count, item is: {0}", Instance->GetItemDefinition()->ItemName.ToString());
+			if (Instance->GetItemDefinition() == ItemDef) //Instance->GetItemDefinition() == ItemDef
 			{
 				TotalCount++;
 			}
 		}
 	}
-
-	return TotalCount;
+	
+		return TotalCount;
 }
 
 bool UPBInventoryComponent::ConsumeItemsByDefinition(UPBItemDefinition* ItemDef, int32 NumToConsume)
