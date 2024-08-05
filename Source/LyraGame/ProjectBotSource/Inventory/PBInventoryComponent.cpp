@@ -171,6 +171,9 @@ UPBInventoryItemInstance* FPBInventoryList::AddEntry(UPBInventoryItemInstance* I
 
 	NewEntry.Instance = UPBInventoryItemInstance::DuplicateItemInstance(Instance, OwnerComponent->GetOwner());  //@TODO: Using the actor instead of component as the outer due to UE-127172
 
+	/*UE_LOGFMT(LogPBGame, Warning, "Item instance given. Tag stacks: {0}", NewEntry.Instance->StatTags.GetDebugString());
+	UE_LOGFMT(LogPBGame, Warning, "Item instance given. Tag stacks2: {0}", NewEntry.Instance->StatTags.GetDebugString2());*/
+
 	NewEntry.StackCount = 1;
 
 	BroadcastInventoryItemCountChangedMessage(Instance->GetItemDefinition());

@@ -72,6 +72,11 @@ public:
 		return TagToCountMap.Contains(Tag);
 	}
 
+	FString GetDebugString() const;
+
+	FString GetDebugString2() const;
+
+
 	//~FFastArraySerializer contract
 	void PreReplicatedRemove(const TArrayView<int32> RemovedIndices, int32 FinalSize);
 	void PostReplicatedAdd(const TArrayView<int32> AddedIndices, int32 FinalSize);
@@ -92,6 +97,7 @@ private:
 	TArray<FGameplayTagStack> Stacks;
 	
 	// Accelerated list of tag stacks for queries
+	UPROPERTY(NotReplicated)
 	TMap<FGameplayTag, int32> TagToCountMap;
 };
 

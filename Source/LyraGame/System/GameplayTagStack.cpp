@@ -90,6 +90,39 @@ void FGameplayTagStackContainer::RemoveStack(FGameplayTag Tag, int32 StackCount)
 	}
 }
 
+FString FGameplayTagStackContainer::GetDebugString() const
+{
+	FString Output; 
+
+	for (auto Stack : TagToCountMap)
+	{
+		Output += Stack.Key.ToString();
+		Output += FString::Printf(TEXT("x"));
+		Output += FString::Printf(TEXT("%d"), Stack.Value);
+		Output += FString::Printf(TEXT(",   "));
+	}
+
+	/*for (FGameplayTagStack Stack : Stacks)
+	{
+		Output += Stack.GetDebugString();
+		Output += FString::Printf(TEXT(", "));
+	}*/
+	return Output;
+}
+
+FString FGameplayTagStackContainer::GetDebugString2() const
+{
+	FString Output;
+
+	for (FGameplayTagStack Stack : Stacks)
+	{
+		Output += Stack.GetDebugString();
+		Output += FString::Printf(TEXT(", "));
+	}
+
+	return Output;
+}
+
 void FGameplayTagStackContainer::PreReplicatedRemove(const TArrayView<int32> RemovedIndices, int32 FinalSize)
 {
 	for (int32 Index : RemovedIndices)

@@ -244,6 +244,13 @@ void UPBItemSlotComponent::Server_SwapSlots_Implementation(FPBInventorySlotIndex
 			EquipItemInSlot(TargetIndex.SlotType);
 		}
 
+		if(TargetSlots.SlotArray[TargetIndex.SlotIndex])
+		{
+			UE_LOGFMT(LogPBGame, Warning, "Stat tag debug itemswap1: {0}", TargetSlots.SlotArray[TargetIndex.SlotIndex]->GetDebugStringStatTags());
+		}
+
+
+
 		bWasSuccessful = true;
 	}
 
@@ -336,6 +343,8 @@ void UPBItemSlotComponent::AddItemToSlot(EPBInventorySlotType SlotType, int32 Sl
 		{
 			UE_LOGFMT(LogPBGame, Warning, "Changing slot at index: {idx}", SlotIndex);
 			Slots.SlotArray[SlotIndex] = Item;
+			UE_LOGFMT(LogPBGame, Warning, "Stat tag debug itemslot: {0}", Slots.SlotArray[SlotIndex]->GetDebugStringStatTags());
+
 			Handle_OnRep_SlotsChanged(SlotType, PreviousSlots);
 		}
 	}

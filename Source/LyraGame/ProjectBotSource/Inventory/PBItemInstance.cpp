@@ -54,6 +54,16 @@ void UPBInventoryItemInstance::RemoveStackCount(int32 StacksToRemove)
 	ItemStackCount -= StacksToRemove;
 }
 
+FString UPBInventoryItemInstance::GetDebugStringStatTags()
+{
+	return StatTags.GetDebugString();
+}
+
+FString UPBInventoryItemInstance::GetDebugStringStatTags2()
+{
+	return StatTags.GetDebugString2();
+}
+
 int32 UPBInventoryItemInstance::GetStackCount() const
 {
 	return ItemStackCount;

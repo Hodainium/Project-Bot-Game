@@ -52,6 +52,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = Inventory)
 	void RemoveStackCount(int32 StacksToRemove);
 
+	FString GetDebugStringStatTags();
+
+	FString GetDebugStringStatTags2();
+
 	UFUNCTION(BlueprintCallable, Category = Inventory)
 	int32 GetStackCount() const;
 

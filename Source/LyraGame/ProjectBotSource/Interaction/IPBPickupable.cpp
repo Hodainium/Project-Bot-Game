@@ -113,6 +113,10 @@ void UPBPickupableStatics::PushPickupToPlayer(APawn* PlayerPawn, TScriptInterfac
 			{
 				UPBInventoryItemInstance* Result = InventoryComponent->AddItemInstance(Instance.Item);
 
+				/*UE_LOGFMT(LogPBGame, Warning, "Stat tag debug: {0}", Result->GetDebugStringStatTags());
+				UE_LOGFMT(LogPBGame, Warning, "Stat tag debug2: {0}", Result->GetDebugStringStatTags2());*/
+
+
 				if (SlotComponent->GetSlotsForEnum(EPBInventorySlotType::Temporary)[0] != nullptr)
 				{
 					UE_LOGFMT(LogPBGame, Warning, "Dropping extra gun from pickup not yet implemented");
