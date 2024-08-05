@@ -61,7 +61,7 @@ class LYRAGAME_API UPBItemDefinition : public UPrimaryDataAsset
 public:
 
 	UPBItemDefinition()
-		: BaseItemQuality(EPBItemQuality::Quality0), Price(0)
+		: ItemQuantity(1), ItemQuantityQualityFactor(1), BaseItemQuality(EPBItemQuality::Quality0), Price(0)
 		  , CanBeStacked(false), MaxStack(1)
 		  , MaxDurability(0)
 		  , Weight(0), MaxLevel(1)
@@ -76,6 +76,13 @@ public:
 	/** Type of this item, set in native parent class */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Item, AssetRegistrySearchable)
 	EPBItemType ItemType;
+
+	UPROPERTY(EditDefaultsOnly)
+	int32 ItemQuantity;
+
+	//This is the factor that is applied to the itemquantity depending on quality drop. 
+	UPROPERTY(EditDefaultsOnly)
+	float ItemQuantityQualityFactor;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Item)
 	FGameplayTagContainer ItemTags;

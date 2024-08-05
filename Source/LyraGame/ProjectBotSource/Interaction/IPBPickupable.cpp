@@ -123,6 +123,10 @@ void UPBPickupableStatics::PushPickupToPlayer(APawn* PlayerPawn, TScriptInterfac
 					//SlotComponent->Client_OpenInventory();
 				}
 			}
+			else if (Instance.Item->GetItemTypeEnum() == EPBItemType::Resource)
+			{
+				UPBInventoryItemInstance* Result = InventoryComponent->AddItemInstance(Instance.Item);
+			}
 
 			return;
 		}

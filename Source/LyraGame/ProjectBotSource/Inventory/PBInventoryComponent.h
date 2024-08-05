@@ -17,7 +17,7 @@ class UPBInventoryItemInstance;
 
 /** A message when an item is added to the inventory */
 USTRUCT(BlueprintType)
-struct FPBInventoryChangeMessage
+struct FPBInventoryItemCountChangedMessage
 {
 	GENERATED_BODY()
 
@@ -36,6 +36,19 @@ struct FPBInventoryChangeMessage
 };
 
 USTRUCT(BlueprintType)
+struct FPBInventoryChangedMessage
+{
+	GENERATED_BODY()
+
+	//@TODO: Tag based names+owning actors for inventories instead of directly exposing the component?
+	UPROPERTY(BlueprintReadOnly, Category = Inventory)
+	TObjectPtr<UActorComponent> InventoryOwner = nullptr;
+
+	UPROPERTY(BlueprintReadOnly, Category = Inventory)
+	TObjectPtr<UPBItemDefinition> ItemDef = nullptr;
+};
+
+USTRUCT(BlueprintType)
 struct FPBInventoryEntry : public FFastArraySerializerItem
 {
 	GENERATED_BODY()
@@ -44,7 +57,7 @@ struct FPBInventoryEntry : public FFastArraySerializerItem
 	{
 	}
 
-	FPBInventoryEntry(UPBInventoryItemInstance* InInstance, bool bIsRotated, int32 InStackCount) : Instance(InInstance),
+	FPBInventoryEntry(UPBInventoryItemInstance* InInstance, int32 InStackCount) : Instance(InInstance),
 		Index(-1),
 		StackCount(InStackCount)
 	{
@@ -114,6 +127,8 @@ private:
 	//friend UPBGridInventoryComponent;
 
 	void BroadcastChangeMessage(FPBInventoryEntry& Entry, int32 OldCount, int32 NewCount);
+	void BroadcastInventoryItemCountChangedMessage(UPBItemDefinition* InItemDef);
+
 
 private:
 	// Replicated list of items
@@ -162,7 +177,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = Inventory, BlueprintPure)
 	UPBInventoryItemInstance* FindFirstItemStackByDefinition(UPBItemDefinition* ItemDef) const;
 
+	UFUNCTION(BlueprintCallable, Category = Inventory)
 	int32 GetTotalItemCountByDefinition(UPBItemDefinition* ItemDef) const;
+
+	UFUNCTION(BlueprintCallable, Category = Inventory)
 	bool ConsumeItemsByDefinition(UPBItemDefinition* ItemDef, int32 NumToConsume);
 
 	//~UObject interface

@@ -686,6 +686,12 @@ void UPBItemSlotComponent::OnRep_bTwoHanding()
 	}
 	UnequipItemInSlot(EPBInventorySlotType::Weapon_R);
 	EquipItemInSlot(EPBInventorySlotType::Weapon_R);
+
+	FPBTwoHandingChangedMessage Message;
+	Message.Owner = GetOwner();
+	Message.TwoHanding = bTwoHanding;
+	UGameplayMessageSubsystem& MessageSystem = UGameplayMessageSubsystem::Get(this);
+	MessageSystem.BroadcastMessage(PB_ItemSlots_Tags::TAG_ITEMSLOTS_MESSAGE_TWOHANDINGCHANGED, Message);
 }
 
 void UPBItemSlotComponent::OnRep_SlotStruct_Weapon_L(FPBInventorySlotStruct& PreviousValue)

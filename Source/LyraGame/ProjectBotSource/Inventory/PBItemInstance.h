@@ -43,6 +43,18 @@ public:
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = Inventory)
+	void SetStackCount(int32 StackCount);
+
+	UFUNCTION(BlueprintCallable, Category = Inventory)
+	void AddStackCount(int32 StacksToAdd);
+
+	UFUNCTION(BlueprintCallable, Category = Inventory)
+	void RemoveStackCount(int32 StacksToRemove);
+
+	UFUNCTION(BlueprintCallable, Category = Inventory)
+	int32 GetStackCount() const;
+
 	// Adds a specified number of stacks to the tag (does nothing if StackCount is below 1)
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = Inventory)
 	void AddStatTagStack(FGameplayTag Tag, int32 StackCount);

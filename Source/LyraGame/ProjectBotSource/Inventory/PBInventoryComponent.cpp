@@ -13,7 +13,7 @@
 #include "ProjectBotSource/Modifiers/PBItemModInstance.h"
 
 UE_DEFINE_GAMEPLAY_TAG(TAG_Inventory_Message_StackChanged, "Inventory.Message.StackChanged");
-//UE_DEFINE_GAMEPLAY_TAG(TAG_Inventory_Item_Count, "ItemStatTags.Inventory.Item.Count");
+UE_DEFINE_GAMEPLAY_TAG(TAG_Inventory_Message_Item_Count, "Inventory.Message.ItemStackChanged");
 
 FString FPBInventoryEntry::GetDebugString() const
 {
@@ -46,6 +46,7 @@ void FPBInventoryList::PreReplicatedRemove(const TArrayView<int32> RemovedIndice
 	{
 		FPBInventoryEntry& Stack = Entries[Index];
 		BroadcastChangeMessage(Stack, /*OldCount=*/ Stack.StackCount, /*NewCount=*/ 0);
+		BroadcastInventoryItemCountChangedMessage(Stack.Instance->GetItemDefinition());
 		Stack.LastObservedCount = 0;
 	}
 }
@@ -56,6 +57,7 @@ void FPBInventoryList::PostReplicatedAdd(const TArrayView<int32> AddedIndices, i
 	{
 		FPBInventoryEntry& Stack = Entries[Index];
 		BroadcastChangeMessage(Stack, /*OldCount=*/ 0, /*NewCount=*/ Stack.StackCount);
+		BroadcastInventoryItemCountChangedMessage(Stack.Instance->GetItemDefinition());
 		Stack.LastObservedCount = Stack.StackCount;
 	}
 }
@@ -67,6 +69,7 @@ void FPBInventoryList::PostReplicatedChange(const TArrayView<int32> ChangedIndic
 		FPBInventoryEntry& Stack = Entries[Index];
 		check(Stack.LastObservedCount != INDEX_NONE);
 		BroadcastChangeMessage(Stack, /*OldCount=*/ Stack.LastObservedCount, /*NewCount=*/ Stack.StackCount);
+		BroadcastInventoryItemCountChangedMessage(Stack.Instance->GetItemDefinition());
 		Stack.LastObservedCount = Stack.StackCount;
 	}
 }
@@ -83,8 +86,10 @@ void FPBInventoryList::RemoveEntry(UPBInventoryItemInstance* Instance)
 		FPBInventoryEntry& Entry = *EntryIt;
 		if (Entry.Instance == Instance)
 		{
+			UPBItemDefinition* ItemDef = Instance->GetItemDefinition();
 			EntryIt.RemoveCurrent();
 			MarkArrayDirty();
+			BroadcastInventoryItemCountChangedMessage(ItemDef);
 		}
 	}
 }
@@ -104,7 +109,7 @@ bool FPBInventoryList::MarkItemIDDirty(int32 ItemID)
 
 void FPBInventoryList::BroadcastChangeMessage(FPBInventoryEntry& Entry, int32 OldCount, int32 NewCount)
 {
-	FPBInventoryChangeMessage Message;
+	FPBInventoryItemCountChangedMessage Message;
 	Message.InventoryOwner = OwnerComponent;
 	Message.Instance = Entry.Instance;
 	Message.NewCount = NewCount;
@@ -114,6 +119,18 @@ void FPBInventoryList::BroadcastChangeMessage(FPBInventoryEntry& Entry, int32 Ol
 
 	UGameplayMessageSubsystem& MessageSystem = UGameplayMessageSubsystem::Get(OwnerComponent->GetWorld());
 	MessageSystem.BroadcastMessage(TAG_Inventory_Message_StackChanged, Message);
+}
+
+void FPBInventoryList::BroadcastInventoryItemCountChangedMessage(UPBItemDefinition* InItemDef)
+{
+	FPBInventoryChangedMessage Message;
+	Message.InventoryOwner = OwnerComponent;
+	Message.ItemDef = InItemDef;
+
+	UE_LOGFMT(LogPBGame, Warning, "Stacks changed! In code");
+
+	UGameplayMessageSubsystem& MessageSystem = UGameplayMessageSubsystem::Get(OwnerComponent->GetWorld());
+	MessageSystem.BroadcastMessage(TAG_Inventory_Message_Item_Count, Message);
 }
 
 UPBInventoryItemInstance* FPBInventoryList::AddEntry(UPBItemDefinition* ItemDef, int32 StackCount)
@@ -130,10 +147,12 @@ UPBInventoryItemInstance* FPBInventoryList::AddEntry(UPBItemDefinition* ItemDef,
 	FPBInventoryEntry& NewEntry = Entries.AddDefaulted_GetRef();
 	NewEntry.Instance = NewObject<UPBInventoryItemInstance>(OwnerComponent->GetOwner());  //@TODO: Using the actor instead of component as the outer due to UE-127172
 	NewEntry.Instance->SetItemDef(ItemDef);
+	NewEntry.Instance->SetStackCount(StackCount);
 	NewEntry.StackCount = StackCount;
 	Result = NewEntry.Instance;
 
 	//NewEntry.Instance->AddStatTagStack(TAG_Inventory_Item_Count, StackCount);
+	BroadcastInventoryItemCountChangedMessage(ItemDef);
 
 	MarkItemDirty(NewEntry);
 
@@ -153,6 +172,8 @@ UPBInventoryItemInstance* FPBInventoryList::AddEntry(UPBInventoryItemInstance* I
 	NewEntry.Instance = UPBInventoryItemInstance::DuplicateItemInstance(Instance, OwnerComponent->GetOwner());  //@TODO: Using the actor instead of component as the outer due to UE-127172
 
 	NewEntry.StackCount = 1;
+
+	BroadcastInventoryItemCountChangedMessage(Instance->GetItemDefinition());
 
 	MarkItemDirty(NewEntry);
 
@@ -278,7 +299,7 @@ int32 UPBInventoryComponent::GetTotalItemCountByDefinition(UPBItemDefinition* It
 			UE_LOGFMT(LogPBGame, Warning, "Getting total count, item is: {0}", Instance->GetItemDefinition()->ItemName.ToString());
 			if (Instance->GetItemDefinition() == ItemDef) //Instance->GetItemDefinition() == ItemDef
 			{
-				TotalCount++;
+				TotalCount += Instance->GetStackCount();
 			}
 		}
 	}
@@ -294,18 +315,37 @@ bool UPBInventoryComponent::ConsumeItemsByDefinition(UPBItemDefinition* ItemDef,
 		return false;
 	}
 
+
 	int32 TotalConsumed = 0;
 	while (TotalConsumed < NumToConsume)
 	{
 		if (UPBInventoryItemInstance* Instance = UPBInventoryComponent::FindFirstItemStackByDefinition(ItemDef))
 		{
-			InventoryList.RemoveEntry(Instance);
-			TotalConsumed++;
+			//Do logic here that checks if stacks to remove is greater than current
+
+			int32 CurrentStack = Instance->GetStackCount();
+
+			if(NumToConsume >= CurrentStack)
+			{
+				TotalConsumed += CurrentStack;
+				RemoveItemInstance(Instance);
+			}
+			else
+			{
+				TotalConsumed += NumToConsume;
+				Instance->RemoveStackCount(NumToConsume);
+			}
 		}
 		else
 		{
 			return false;
 		}
+	}
+
+
+	if(TotalConsumed > 0)
+	{
+		InventoryList.BroadcastInventoryItemCountChangedMessage(ItemDef);
 	}
 
 	return TotalConsumed == NumToConsume;

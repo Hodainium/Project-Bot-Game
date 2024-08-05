@@ -362,3 +362,19 @@ struct FPBItemSlotsNumSlotsChangedMessage
 	UPROPERTY(BlueprintReadOnly, Category = Inventory)
 	int32 NumSlots = 0;
 };
+
+USTRUCT(BlueprintType)
+struct FPBTwoHandingChangedMessage
+{
+	GENERATED_BODY()
+
+	FPBTwoHandingChangedMessage() : TwoHanding(false)
+	{
+	}
+
+	UPROPERTY(BlueprintReadOnly, Category = Inventory)
+	TObjectPtr<AActor> Owner = nullptr;
+
+	UPROPERTY(BlueprintReadOnly, Category = Inventory)
+	bool TwoHanding;
+};

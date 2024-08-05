@@ -12,7 +12,7 @@
 #include "ProjectBotSource/Modifiers/PBItemModInstance.h"
 
 UPBInventoryItemInstance::UPBInventoryItemInstance(const FObjectInitializer& ObjectInitializer)
-	: Super(ObjectInitializer), ItemQuality(EPBItemQuality::Quality0)
+	: Super(ObjectInitializer), ItemStackCount(1), ItemQuality(EPBItemQuality::Quality0)
 {
 }
 
@@ -37,6 +37,26 @@ void UPBInventoryItemInstance::GetLifetimeReplicatedProps(TArray<FLifetimeProper
 	DOREPLIFETIME(ThisClass, ItemQuality);
 	DOREPLIFETIME(ThisClass, ItemMods);
 	DOREPLIFETIME(ThisClass, ReplicatedAdjectiveIndexKey);
+}
+
+void UPBInventoryItemInstance::SetStackCount(int32 StackCount)
+{
+	ItemStackCount = StackCount;
+}
+
+void UPBInventoryItemInstance::AddStackCount(int32 StacksToAdd)
+{
+	ItemStackCount += StacksToAdd;
+}
+
+void UPBInventoryItemInstance::RemoveStackCount(int32 StacksToRemove)
+{
+	ItemStackCount -= StacksToRemove;
+}
+
+int32 UPBInventoryItemInstance::GetStackCount() const
+{
+	return ItemStackCount;
 }
 
 void UPBInventoryItemInstance::AddStatTagStack(FGameplayTag Tag, int32 StackCount)

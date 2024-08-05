@@ -31,7 +31,7 @@ class LYRAGAME_API UPBWeaponItemDefinition : public UPBEquippableItem
 
 public:
 	/** Constructor */
-	UPBWeaponItemDefinition()
+	UPBWeaponItemDefinition(): AmmoItem(nullptr)
 	{
 		bUsesAmmo = false;
 		ItemType = EPBItemType::Weapon;
@@ -44,6 +44,10 @@ public:
 	/** Does this weapon use ammo? */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Weapon)
 	bool bUsesAmmo;
+
+	/** Ammo item that is consumed */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Weapon, meta = (EditCondition = "bUsesAmmo"))
+	UPBItemDefinition* AmmoItem;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Weapon)
 	float Damage;

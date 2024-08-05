@@ -7,6 +7,7 @@
 #include "ProjectBotSource/Inventory/PBItemDefinition.h"
 #include "ProjectBotSource/Inventory/PBItemInstance.h"
 #include "Logging/StructuredLog.h"
+#include "ProjectBotSource/Logs/PBLogChannels.h"
 #include "ProjectBotSource/LootSubsystem/PBItemSearchQuery.h"
 #include "ProjectBotSource/Modifiers/PBItemModDefinition.h"
 #include "ProjectBotSource/Modifiers/PBItemModInstance.h"
@@ -79,6 +80,12 @@ UPBInventoryItemInstance* UPBLootGenGameInstanceSubsystem::GenerateItemInstance(
 
 	EPBItemQuality ItemQuality = GenerateItemQuality();
 	Instance->SetItemQuality(ItemQuality);
+
+	int32 QualityFactor = static_cast<int>(ItemQuality);
+
+	int32 QuantityMultiplier = QualityFactor > 0 ? ItemDef->ItemQuantityQualityFactor * QualityFactor : 1;
+
+	Instance->SetStackCount(ItemDef->ItemQuantity * QuantityMultiplier);
 
 	FName RowKey = GetRandomAdjectiveRowKey();
 
