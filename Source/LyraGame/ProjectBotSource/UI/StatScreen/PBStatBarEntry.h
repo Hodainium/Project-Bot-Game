@@ -11,11 +11,18 @@ struct LYRAGAME_API FPBStatBarPipData
 {
 	GENERATED_BODY()
 
-	FPBStatBarPipData()
-	{}
+	FPBStatBarPipData(): TotalPips(0), EnabledPips(0), PoweredPips(0), TempPips(0), BonusPips(0), NegativePips(0)
+	{
+	}
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int DefaultPips;
+	int TotalPips;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int EnabledPips;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int PoweredPips;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int TempPips;

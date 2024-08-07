@@ -145,6 +145,12 @@ namespace PB_Inventory_Tags
 	UE_DEFINE_GAMEPLAY_TAG(TAG_INVENTORY_PUSHITEMPROMPT, "GameplayEvent.Inventory.PushPrompt");
 }
 
+namespace PB_Stat_Tags
+{
+	UE_DEFINE_GAMEPLAY_TAG(TAG_STAT_STRENGTH, "Stats.Strength.Current");
+	UE_DEFINE_GAMEPLAY_TAG(TAG_STAT_MAXSTRENGTH, "Stats.Strength.MaxCurrent");
+}
+
 namespace PB_ItemSlots_Tags
 {
 	UE_DEFINE_GAMEPLAY_TAG(TAG_ITEMSLOTS_MESSAGE_SLOTSCHANGED, "Inventory.ItemSlots.Message.SlotsChanged");
