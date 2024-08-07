@@ -10,7 +10,7 @@
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(PBStatsSet)
 
-UPBStatsSet::UPBStatsSet() : Strength(1.0f), MaxStrength(6.0f)
+UPBStatsSet::UPBStatsSet() : Strength(1.0f), MaxStrength(3.0f)
 {
 }
 
