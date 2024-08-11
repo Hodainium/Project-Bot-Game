@@ -8,6 +8,7 @@
 #include "UObject/NoExportTypes.h"
 #include "PBStatDefinition.generated.h"
 
+class UGameplayEffect;
 class ULyraAbilitySet;
 
 /**
@@ -23,13 +24,15 @@ struct LYRAGAME_API FPBStatLevelEntry
 	{
 	}
 
-	UPROPERTY(EditDefaultsOnly)
+public:
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	int Cost;
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FText Description;
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TArray<TObjectPtr<const ULyraAbilitySet>> AbilitySetsToGrant;
 };
 
@@ -66,6 +69,12 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Stats)
 	FGameplayAttribute MaxValueAttribute;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Stats)
+	TSubclassOf<UGameplayEffect> StatLevelGE;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Stats)
+	TSubclassOf<UGameplayEffect> MaxStatLevelGE;
 
 	/** Stat Entries */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Stats)

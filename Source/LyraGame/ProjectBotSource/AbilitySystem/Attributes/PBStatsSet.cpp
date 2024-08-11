@@ -10,7 +10,7 @@
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(PBStatsSet)
 
-UPBStatsSet::UPBStatsSet() : Strength(1.0f), MaxStrength(3.0f)
+UPBStatsSet::UPBStatsSet() : Strength(1.0f), MaxStrength(3.0f), PowerBank(10.f), MaxPowerBank(10.f)
 {
 }
 
@@ -20,6 +20,9 @@ void UPBStatsSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
 
 	DOREPLIFETIME_CONDITION_NOTIFY(UPBStatsSet, Strength, COND_OwnerOnly, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(UPBStatsSet, MaxStrength, COND_OwnerOnly, REPNOTIFY_Always);
+
+	DOREPLIFETIME_CONDITION_NOTIFY(UPBStatsSet, PowerBank, COND_OwnerOnly, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UPBStatsSet, MaxPowerBank, COND_OwnerOnly, REPNOTIFY_Always);
 }
 
 void UPBStatsSet::OnRep_Strength(const FGameplayAttributeData& OldValue)
@@ -27,5 +30,13 @@ void UPBStatsSet::OnRep_Strength(const FGameplayAttributeData& OldValue)
 }
 
 void UPBStatsSet::OnRep_MaxStrength(const FGameplayAttributeData& OldValue)
+{
+}
+
+void UPBStatsSet::OnRep_PowerBank(const FGameplayAttributeData& OldValue)
+{
+}
+
+void UPBStatsSet::OnRep_MaxPowerBank(const FGameplayAttributeData& OldValue)
 {
 }

@@ -232,6 +232,7 @@ protected:
 	//Flag that is set and removed when sending a server swap request and recieving confirmation
 	UPROPERTY()
 	bool IsPendingServerConfirmation;
+
 	//The remaining slots that need to be checked after network update
 	UPROPERTY()
 	TArray<FPBInventorySlotIndex> PendingSlotData;
