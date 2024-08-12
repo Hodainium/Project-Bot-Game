@@ -6,11 +6,13 @@
 #include "AbilitySystemComponent.h"
 #include "PBStatDefinition.h"
 #include "Character/LyraCharacter.h"
+#include "GameFramework/GameplayMessageSubsystem.h"
 #include "Logging/StructuredLog.h"
 #include "Net/UnrealNetwork.h"
 #include "ProjectBotSource/AbilitySystem/Attributes/PBStatsSet.h"
 #include "ProjectBotSource/Logs/PBLogChannels.h"
 
+UE_DEFINE_GAMEPLAY_TAG(TAG_Stats_Attribute_Changed, "Stats.Message.AttributeChanged");
 
 int FPBStatLevel::GetCost() const
 {
@@ -60,41 +62,41 @@ void UPBStatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	DOREPLIFETIME(ThisClass, StatInstances);
 }
 
-void UPBStatComponent::RequestStatPowerUp(UPBStatDefinition* StatDef)
+bool UPBStatComponent::RequestStatPowerUp(UPBStatDefinition* StatDef)
 {
-	IsPendingServerConfirmation = true;
+	if(IsPowerRequestValid(StatDef, 1))
+	{
+		IsPendingServerConfirmation = true;
 
-	Server_TryPowerChange(StatDef, 1);
+		Server_TryPowerChange(StatDef, 1);
+
+		return true;
+	}
+
+	return false;
 }
 
-void UPBStatComponent::RequestStatPowerDown(UPBStatDefinition* StatDef)
+bool UPBStatComponent::RequestStatPowerDown(UPBStatDefinition* StatDef)
 {
-	IsPendingServerConfirmation = true;
+	if (IsPowerRequestValid(StatDef, -1))
+	{
+		IsPendingServerConfirmation = true;
 
-	Server_TryPowerChange(StatDef, -1);
+		Server_TryPowerChange(StatDef, -1);
+
+		return true;
+	}
+
+	return false;
 }
 
 void UPBStatComponent::Client_ConfirmCartCheckout_Implementation(bool bSuccessful)
 {
 	UE_LOGFMT(LogPBGame, Warning, "pending set to false");
 	IsPendingServerConfirmation = false;
-	Cart.Empty();
 
-	//if (!bSuccessful)
-	//{
-	//	PendingSlotData.Reset();
-	//}
-
-	//if (PendingSlotData.IsEmpty())
-	//{
-	//	//Broadcast a message here
-	//	if (OnReceivedServerSwapData.IsBound())
-	//	{
-	//		UE_LOGFMT(LogPBGame, Warning, "broadcasting data recieved from client rpc");
-	//		OnReceivedServerSwapData.Broadcast();
-	//	}
-	//}
-
+	//Need to empty like this so it broadcasts
+	EmptyCart();
 
 	UE_LOGFMT(LogPBGame, Warning, "pending tried to broadcast");
 }
@@ -180,6 +182,9 @@ void UPBStatComponent::RemoveStatMaxLevelPowerGE(UPBStatDefinition* StatDef)
 void UPBStatComponent::LinkASC(UAbilitySystemComponent* InASC)
 {
 	LinkedASC = InASC;
+
+	GrantInitialStatsAsset();
+
 	for (FPBStatInstance& StatInstance : StatInstances)
 	{
 		StatInstance.StatLevelListener = InASC->GetGameplayAttributeValueChangeDelegate(StatInstance.StatDef->CurrentValueAttribute).AddUObject(this, &ThisClass::HandleStatLevelAttributeChanged);
@@ -258,6 +263,8 @@ void UPBStatComponent::HandleStatLevelAttributeChanged(const FOnAttributeChangeD
 			}
 		}
 	}
+
+	BroadcastStatAttributeChangeMessage(Data.Attribute);
 }
 
 void UPBStatComponent::HandleMaxStatLevelAttributeChanged(const FOnAttributeChangeData& Data)
@@ -265,6 +272,9 @@ void UPBStatComponent::HandleMaxStatLevelAttributeChanged(const FOnAttributeChan
 	//Loop through statdefs find and remove abilitysets. This is the only place we should grant and remove abilitysets
 
 	unimplemented();
+
+	BroadcastStatAttributeChangeMessage(Data.Attribute);
+
 }
 
 UPBInventoryComponent* UPBStatComponent::GetInventoryComponentFromOwner()
@@ -288,11 +298,24 @@ bool UPBStatComponent::IsPowerRequestValid(UPBStatDefinition* StatDef, int Power
 	return bValidBounds && bMeetsCost;
 }
 
+bool UPBStatComponent::IsMaxPowerRequestValid(UPBStatDefinition* StatDef, int PowerChangeAmount)
+{
+	int NewMax = GetMaxStatLevelForStatDef(StatDef) + PowerChangeAmount;
+
+	return NewMax <= StatDef->MaxLevel && NewMax >= 0;
+}
+
+bool UPBStatComponent::IsCartEntryValid(const FPBStatLevel& CartEntry)
+{
+	return CartEntry.StatDef->MaxLevel >= CartEntry.Level;
+}
+
 bool UPBStatComponent::TryAddToCart(FPBStatLevel CartEntry)
 {
-	if(CheckCartCost(CartEntry.GetCost()))
+	if(CheckCartCost(CartEntry.GetCost()) && IsCartEntryValid(CartEntry))
 	{
 		Cart.Add(CartEntry);
+		BroadcastStatAttributeChangeMessage(CartEntry.StatDef);
 		return true;
 	}
 
@@ -302,6 +325,7 @@ bool UPBStatComponent::TryAddToCart(FPBStatLevel CartEntry)
 void UPBStatComponent::RemoveFromCart(FPBStatLevel CartEntry)
 {
 	Cart.Remove(CartEntry);
+	BroadcastStatAttributeChangeMessage(CartEntry.StatDef);
 }
 
 void UPBStatComponent::RequestCartCheckout()
@@ -311,9 +335,48 @@ void UPBStatComponent::RequestCartCheckout()
 	Server_TryCartCheckout(Cart);
 }
 
+void UPBStatComponent::EmptyCart()
+{
+	if (Cart.Num() > 0)
+	{
+		TArray<UPBStatDefinition*> StatDefs;
+
+		for (const FPBStatLevel& StatLevel : Cart)
+		{
+			StatDefs.Add(StatLevel.StatDef);
+		}
+
+		Cart.Empty();
+
+		for (UPBStatDefinition* StatDef : StatDefs)
+		{
+			BroadcastStatAttributeChangeMessage(StatDef);
+		}
+	}
+}
+
 bool UPBStatComponent::GetIsPendingServerConfirmation()
 {
 	return IsPendingServerConfirmation;
+}
+
+bool UPBStatComponent::GetHighestCartEntryForStatDef(UPBStatDefinition* StatDef, FPBStatLevel& CartEntry)
+{
+	bool bFound = false;
+
+	for (const FPBStatLevel& Entry : Cart)
+	{
+		if (StatDef == Entry.StatDef)
+		{
+			if(CartEntry.Level <= Entry.Level)
+			{
+				CartEntry = Entry;
+				bFound = true;
+			}
+		}
+	}
+
+	return bFound;
 }
 
 void UPBStatComponent::Client_ConfirmPowerChange_Implementation(bool bSuccessful)
@@ -329,6 +392,21 @@ int UPBStatComponent::GetPowerBankLevel()
 int UPBStatComponent::GetPowerBankMaxLevel()
 {
 	return GetMaxStatLevelForStatDef(InitialStatsAsset->PowerBankStartingStats.StatDef);
+}
+
+int UPBStatComponent::GetCartCountForStatDefinition(UPBStatDefinition* StatDef)
+{
+	int Count = 0;
+
+	for (const FPBStatLevel& StatLevel : Cart)
+	{
+		if(StatLevel.StatDef == StatDef)
+		{
+			Count++;
+		}
+	}
+
+	return Count;
 }
 
 int UPBStatComponent::GetStatLevelForStatDef(UPBStatDefinition* StatDef)
@@ -390,13 +468,17 @@ void UPBStatComponent::Server_TryCartCheckout_Implementation(const TArray<FPBSta
 
 		for (const FPBStatLevel& StatLevel : InCart)
 		{
-			GrantStatMaxLevelPowerGE(StatLevel.StatDef);
+			if(IsCartEntryValid(StatLevel))
+			{
+				GrantStatMaxLevelPowerGE(StatLevel.StatDef);
+			}
 		}
 	}
 
-	Cart.Empty();
-
+	//Need to call first so that listen server can broadcast changes
 	Client_ConfirmCartCheckout(bWasSuccessful);
+
+	Cart.Empty();
 }
 
 bool UPBStatComponent::CheckCartCost(int CostToAdd)
@@ -510,4 +592,39 @@ void UPBStatComponent::GrantInitialStat(const FPBInitialStat& InInitialStat)
 	{
 		GrantStatLevelPowerGE(InInitialStat.StatDef);
 	}
+}
+
+UPBStatDefinition* UPBStatComponent::GetStatDefinitionForAttribute(const FGameplayAttribute& InAttribute) const
+{
+	if(InitialStatsAsset->PowerBankStartingStats.StatDef->CurrentValueAttribute == InAttribute || 
+		InitialStatsAsset->PowerBankStartingStats.StatDef->MaxValueAttribute == InAttribute)
+	{
+		return InitialStatsAsset->PowerBankStartingStats.StatDef;
+	}
+
+	for (const FPBInitialStat& Stat : InitialStatsAsset->StartingStatLevels)
+	{
+		if (Stat.StatDef->CurrentValueAttribute == InAttribute ||
+			Stat.StatDef->MaxValueAttribute == InAttribute)
+		{
+			return Stat.StatDef;
+		}
+	}
+
+	return nullptr;
+}
+
+void UPBStatComponent::BroadcastStatAttributeChangeMessage(const FGameplayAttribute& InAttribute) const
+{
+	BroadcastStatAttributeChangeMessage(GetStatDefinitionForAttribute(InAttribute));
+}
+
+void UPBStatComponent::BroadcastStatAttributeChangeMessage(UPBStatDefinition* InStatDef) const
+{
+	FPBStatAttributeChangedMessage Message;
+	Message.StatComponent = this;
+	Message.StatDef = InStatDef;
+
+	UGameplayMessageSubsystem& MessageSystem = UGameplayMessageSubsystem::Get(this);
+	MessageSystem.BroadcastMessage(TAG_Stats_Attribute_Changed, Message);
 }

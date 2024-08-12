@@ -104,6 +104,18 @@ public:
 	
 };
 
+USTRUCT(BlueprintType)
+struct FPBStatAttributeChangedMessage
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadOnly, Category = Inventory)
+	TObjectPtr<const UActorComponent> StatComponent = nullptr;
+
+	UPROPERTY(BlueprintReadOnly, Category = Inventory)
+	TObjectPtr<UPBStatDefinition> StatDef;
+};
+
 UCLASS(BlueprintType)
 class LYRAGAME_API UPBStatComponent : public UActorComponent
 {
@@ -116,15 +128,20 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	UFUNCTION(BlueprintCallable, Category = "Stats|Button")
-	void RequestStatPowerUp(UPBStatDefinition* StatDef);
+	bool RequestStatPowerUp(UPBStatDefinition* StatDef);
 
 	UFUNCTION(BlueprintCallable, Category = "Stats|Button")
-	void RequestStatPowerDown(UPBStatDefinition* StatDef);
+	bool RequestStatPowerDown(UPBStatDefinition* StatDef);
 
 	UFUNCTION(BlueprintCallable, Category = "Stats|Button")
 	bool IsPowerRequestValid(UPBStatDefinition* StatDef, int PowerChangeAmount);
 
-	//TODO Need to add check against max here
+	UFUNCTION(BlueprintCallable, Category = "Stats|Button")
+	bool IsMaxPowerRequestValid(UPBStatDefinition* StatDef, int PowerChangeAmount = 1);
+
+	UFUNCTION(BlueprintCallable, Category = "Stats|Button")
+	bool IsCartEntryValid(const FPBStatLevel& CartEntry);
+
 	UFUNCTION(BlueprintCallable, Category = "Stats|Cart")
 	bool TryAddToCart(FPBStatLevel CartEntry);
 
@@ -135,22 +152,31 @@ public:
 	void RequestCartCheckout();
 
 	UFUNCTION(BlueprintCallable, Category = "Stats|Cart")
+	void EmptyCart();
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Stats|Cart")
 	int GetCartCost();
 
-	UFUNCTION(BlueprintCallable, Category = "Stats|Network")
+	UFUNCTION(BlueprintCallable,Category = "Stats|Network")
 	bool GetIsPendingServerConfirmation();
 
-	UFUNCTION(BlueprintCallable, Category = "Stats|Stats")
+	UFUNCTION(BlueprintCallable, Category = "Stats|Cart")
+	bool GetHighestCartEntryForStatDef(UPBStatDefinition* StatDef, FPBStatLevel& CartEntry);
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Stats|Stats")
 	int GetStatLevelForStatDef(UPBStatDefinition* StatDef);
 
-	UFUNCTION(BlueprintCallable, Category = "Stats|Stats")
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Stats|Stats")
 	int GetMaxStatLevelForStatDef(UPBStatDefinition* StatDef);
 
-	UFUNCTION(BlueprintCallable, Category = "Stats|Stats")
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Stats|Stats")
 	int GetPowerBankLevel();
 
-	UFUNCTION(BlueprintCallable, Category = "Stats|Stats")
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Stats|Stats")
 	int GetPowerBankMaxLevel();
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Stats|Button")
+	int GetCartCountForStatDefinition(UPBStatDefinition* StatDef);
 
 protected:
 
@@ -190,6 +216,8 @@ protected:
 
 	void UnLinkASC();
 
+
+	//TODO This is where we broadcast
 	virtual void HandleStatLevelAttributeChanged(const FOnAttributeChangeData& Data);
 
 	virtual void HandleMaxStatLevelAttributeChanged(const FOnAttributeChangeData& Data);
@@ -209,6 +237,12 @@ protected:
 	void GrantInitialStatsAsset();
 
 	void GrantInitialStat(const FPBInitialStat& InInitialStat);
+
+	UPBStatDefinition* GetStatDefinitionForAttribute(const FGameplayAttribute& InAttribute) const;
+
+	void BroadcastStatAttributeChangeMessage(const FGameplayAttribute& InAttribute) const;
+
+	void BroadcastStatAttributeChangeMessage(UPBStatDefinition* InStatDef) const;
 
 protected:
 
