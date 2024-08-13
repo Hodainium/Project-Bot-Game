@@ -44,7 +44,7 @@ public:
 
 
 /**
- * UPBStatDefinition
+ * UPBStartingStatsAsset
  */
 
 UCLASS(BlueprintType)

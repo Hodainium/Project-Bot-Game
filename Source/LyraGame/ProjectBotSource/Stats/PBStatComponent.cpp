@@ -5,21 +5,27 @@
 #include "ProjectBotSource/Inventory/PBInventoryComponent.h"
 #include "AbilitySystemComponent.h"
 #include "PBStatDefinition.h"
+#include "AbilitySystem/LyraAbilitySystemComponent.h"
 #include "Character/LyraCharacter.h"
 #include "GameFramework/GameplayMessageSubsystem.h"
 #include "Logging/StructuredLog.h"
 #include "Net/UnrealNetwork.h"
+#include "AbilitySystem/LyraAbilitySystemComponent.h"
 #include "ProjectBotSource/AbilitySystem/Attributes/PBStatsSet.h"
 #include "ProjectBotSource/Logs/PBLogChannels.h"
 
-UE_DEFINE_GAMEPLAY_TAG(TAG_Stats_Attribute_Changed, "Stats.Message.AttributeChanged");
+UE_DEFINE_GAMEPLAY_TAG(TAG_Stats_StatDef_Changed, "Stats.Message.StatDefChanged");
 
 int FPBStatLevel::GetCost() const
 {
-	if(StatDef->StatEntries.IsValidIndex(Level))
+	FPBStatLevelEntry Entry;
+
+	if(StatDef->GetStatEntryForLevel(Level, Entry))
 	{
-		return StatDef->StatEntries[Level].Cost;
+		return Entry.Cost;
 	}
+
+	UE_LOGFMT(LogPBStats, Error, "StatLevel::GetCost(). StatDef {0} Does not have cost for level: {1}", StatDef->StatName.ToString(), Level);
 
 	return 0;
 }
@@ -34,6 +40,8 @@ bool FPBStatInstance::ContainsLevel(int LevelToCheck) const
 		}
 	}
 
+	UE_LOGFMT(LogPBStats, Error, "StatInstance::ContainsLevel(). StatDef {0} Does not contain level: {1}", StatDef->StatName.ToString(), LevelToCheck);
+
 	return false;
 }
 
@@ -46,6 +54,8 @@ int FPBStatInstance::GetHandlesIndexForLevel(int LevelToGet)
 			return i;
 		}
 	}
+
+	UE_LOGFMT(LogPBStats, Error, "StatInstance::GetHandles(). StatDef {0} Could not find Handles for level: {1}", StatDef->StatName.ToString(), LevelToGet);
 
 	return -1;
 }
@@ -66,6 +76,8 @@ bool UPBStatComponent::RequestStatPowerUp(UPBStatDefinition* StatDef)
 {
 	if(IsPowerRequestValid(StatDef, 1))
 	{
+		UE_LOGFMT(LogPBStats, Warning, "CLIENT: RequestPowerDown for StatDef: {0}. Pending Set to true", StatDef->StatName.ToString());
+
 		IsPendingServerConfirmation = true;
 
 		Server_TryPowerChange(StatDef, 1);
@@ -80,6 +92,8 @@ bool UPBStatComponent::RequestStatPowerDown(UPBStatDefinition* StatDef)
 {
 	if (IsPowerRequestValid(StatDef, -1))
 	{
+		UE_LOGFMT(LogPBStats, Warning, "CLIENT: RequestPowerDown for StatDef: {0}. Pending Set to true", StatDef->StatName.ToString());
+
 		IsPendingServerConfirmation = true;
 
 		Server_TryPowerChange(StatDef, -1);
@@ -92,19 +106,19 @@ bool UPBStatComponent::RequestStatPowerDown(UPBStatDefinition* StatDef)
 
 void UPBStatComponent::Client_ConfirmCartCheckout_Implementation(bool bSuccessful)
 {
-	UE_LOGFMT(LogPBGame, Warning, "pending set to false");
+	UE_LOGFMT(LogPBStats, Warning, "CLIENT: Cart Checkout was succesful: {0}. IsPending Reset", bSuccessful);
 	IsPendingServerConfirmation = false;
 
 	//Need to empty like this so it broadcasts
 	EmptyCart();
-
-	UE_LOGFMT(LogPBGame, Warning, "pending tried to broadcast");
 }
 
 void UPBStatComponent::GrantStatLevelPowerGE(UPBStatDefinition* StatDef) //TODO for this and max add active effect handle to stat level
 {
 	if (GetOwnerRole() == ROLE_Authority)
 	{
+		UE_LOGFMT(LogPBStats, Warning, "Granted stat level GE for StatDef: {0}", StatDef->StatName.ToString());
+
 		int StatIndex = GetStatInstanceIndex(StatDef);
 
 		if (StatIndex < 0)
@@ -122,6 +136,8 @@ void UPBStatComponent::GrantStatMaxLevelPowerGE(UPBStatDefinition* StatDef)
 {
 	if (GetOwnerRole() == ROLE_Authority)
 	{
+		UE_LOGFMT(LogPBStats, Warning, "Granted max stat level GE for StatDef: {0}", StatDef->StatName.ToString());
+
 		int StatIndex = GetStatInstanceIndex(StatDef);
 
 		if (StatIndex < 0)
@@ -139,6 +155,8 @@ void UPBStatComponent::RemoveStatLevelPowerGE(UPBStatDefinition* StatDef)
 {
 	if (GetOwnerRole() == ROLE_Authority)
 	{
+		UE_LOGFMT(LogPBStats, Warning, "Removing stat level GE for StatDef: {0}", StatDef->StatName.ToString());
+
 		int StatIndex = GetStatInstanceIndex(StatDef);
 
 		if (StatIndex < 0)
@@ -161,6 +179,8 @@ void UPBStatComponent::RemoveStatMaxLevelPowerGE(UPBStatDefinition* StatDef)
 {
 	if (GetOwnerRole() == ROLE_Authority)
 	{
+		UE_LOGFMT(LogPBStats, Warning, "Removing max stat level GE for StatDef: {0}", StatDef->StatName.ToString());
+
 		int StatIndex = GetStatInstanceIndex(StatDef);
 
 		if (StatIndex < 0)
@@ -176,43 +196,6 @@ void UPBStatComponent::RemoveStatMaxLevelPowerGE(UPBStatDefinition* StatDef)
 
 			StatInstances[StatIndex].GrantedMaxStatGEs.RemoveAt(LastIndex);
 		}
-	}
-}
-
-void UPBStatComponent::LinkASC(UAbilitySystemComponent* InASC)
-{
-	LinkedASC = InASC;
-
-	GrantInitialStatsAsset();
-
-	for (FPBStatInstance& StatInstance : StatInstances)
-	{
-		StatInstance.StatLevelListener = InASC->GetGameplayAttributeValueChangeDelegate(StatInstance.StatDef->CurrentValueAttribute).AddUObject(this, &ThisClass::HandleStatLevelAttributeChanged);
-		StatInstance.MaxStatLevelListener = InASC->GetGameplayAttributeValueChangeDelegate(StatInstance.StatDef->MaxValueAttribute).AddUObject(this, &ThisClass::HandleMaxStatLevelAttributeChanged);
-
-		bool bFound = false;
-
-		FOnAttributeChangeData StatLevelAttributeData; 
-		StatLevelAttributeData.OldValue = 0.f;
-		StatLevelAttributeData.NewValue = InASC->GetGameplayAttributeValue(StatInstance.StatDef->CurrentValueAttribute, bFound);
-		StatLevelAttributeData.Attribute = StatInstance.StatDef->CurrentValueAttribute;
-		HandleStatLevelAttributeChanged(StatLevelAttributeData);
-
-		FOnAttributeChangeData StatMaxLevelAttributeData;
-		StatMaxLevelAttributeData.OldValue = 0.f;
-		StatMaxLevelAttributeData.NewValue = InASC->GetGameplayAttributeValue(StatInstance.StatDef->MaxValueAttribute, bFound);
-		StatMaxLevelAttributeData.Attribute = StatInstance.StatDef->MaxValueAttribute;
-		HandleMaxStatLevelAttributeChanged(StatMaxLevelAttributeData);
-	}
-}
-
-void UPBStatComponent::UnLinkASC()
-{
-	LinkedASC = nullptr;
-	for (FPBStatInstance& StatInstance : StatInstances)
-	{
-		StatInstance.StatLevelListener.Reset();
-		StatInstance.MaxStatLevelListener.Reset();
 	}
 }
 
@@ -232,6 +215,8 @@ int UPBStatComponent::FindStatInstanceIndexForAttribute(FGameplayAttribute Attri
 void UPBStatComponent::HandleStatLevelAttributeChanged(const FOnAttributeChangeData& Data)
 {
 	//Loop through statdefs find and grant/remove abilitysets. This is the only place we should grant and remove abilitysets
+
+	UE_LOGFMT(LogPBStats, Warning, "Handling stat level change for attribute {0}. Changed from {1} to {2}", Data.Attribute.GetName(), Data.OldValue, Data.NewValue);
 
 	int StatIndex = FindStatInstanceIndexForAttribute(Data.Attribute);
 
@@ -269,12 +254,13 @@ void UPBStatComponent::HandleStatLevelAttributeChanged(const FOnAttributeChangeD
 
 void UPBStatComponent::HandleMaxStatLevelAttributeChanged(const FOnAttributeChangeData& Data)
 {
+	UE_LOGFMT(LogPBStats, Warning, "Handling max stat level change for attribute {0}. Changed from {1} to {2}", Data.Attribute.GetName(), Data.OldValue, Data.NewValue);
+
 	//Loop through statdefs find and remove abilitysets. This is the only place we should grant and remove abilitysets
 
-	unimplemented();
+	//TODO Do we want to put logic here to remove powerGEs if max lowers? That should never actually happen given our code. So I guess not
 
 	BroadcastStatAttributeChangeMessage(Data.Attribute);
-
 }
 
 UPBInventoryComponent* UPBStatComponent::GetInventoryComponentFromOwner()
@@ -315,6 +301,7 @@ bool UPBStatComponent::TryAddToCart(FPBStatLevel CartEntry)
 	if(CheckCartCost(CartEntry.GetCost()) && IsCartEntryValid(CartEntry))
 	{
 		Cart.Add(CartEntry);
+		UE_LOGFMT(LogPBStats, Warning, "AddedToCart: Stat {0}, Level {1}", CartEntry.StatDef->StatName.ToString(), CartEntry.Level);
 		BroadcastStatAttributeChangeMessage(CartEntry.StatDef);
 		return true;
 	}
@@ -324,7 +311,10 @@ bool UPBStatComponent::TryAddToCart(FPBStatLevel CartEntry)
 
 void UPBStatComponent::RemoveFromCart(FPBStatLevel CartEntry)
 {
-	Cart.Remove(CartEntry);
+	int AmountRemoved = Cart.Remove(CartEntry);
+
+	UE_LOGFMT(LogPBStats, Warning, "RemoveFromCart: Removed {0}", AmountRemoved);
+
 	BroadcastStatAttributeChangeMessage(CartEntry.StatDef);
 }
 
@@ -381,6 +371,7 @@ bool UPBStatComponent::GetHighestCartEntryForStatDef(UPBStatDefinition* StatDef,
 
 void UPBStatComponent::Client_ConfirmPowerChange_Implementation(bool bSuccessful)
 {
+	UE_LOGFMT(LogPBStats, Warning, "CLIENT: PowerChange was succesful: {0}. IsPending Reset", bSuccessful);
 	IsPendingServerConfirmation = false;
 }
 
@@ -409,6 +400,44 @@ int UPBStatComponent::GetCartCountForStatDefinition(UPBStatDefinition* StatDef)
 	return Count;
 }
 
+void UPBStatComponent::InitializeWithAbilitySystem(ULyraAbilitySystemComponent* InASC)
+{
+	UE_LOGFMT(LogPBStats, Warning, "Initting ASC. With name: {0}", InASC->GetName());
+
+	LinkedASC = InASC;
+
+	GrantInitialStatsAsset();
+
+	for (FPBStatInstance& StatInstance : StatInstances)
+	{
+		StatInstance.StatLevelListener = InASC->GetGameplayAttributeValueChangeDelegate(StatInstance.StatDef->CurrentValueAttribute).AddUObject(this, &ThisClass::HandleStatLevelAttributeChanged);
+		StatInstance.MaxStatLevelListener = InASC->GetGameplayAttributeValueChangeDelegate(StatInstance.StatDef->MaxValueAttribute).AddUObject(this, &ThisClass::HandleMaxStatLevelAttributeChanged);
+
+		bool bFound = false;
+
+		FOnAttributeChangeData StatLevelAttributeData;
+		StatLevelAttributeData.OldValue = 0.f;
+		StatLevelAttributeData.NewValue = InASC->GetGameplayAttributeValue(StatInstance.StatDef->CurrentValueAttribute, bFound);
+		StatLevelAttributeData.Attribute = StatInstance.StatDef->CurrentValueAttribute;
+		HandleStatLevelAttributeChanged(StatLevelAttributeData);
+
+		FOnAttributeChangeData StatMaxLevelAttributeData;
+		StatMaxLevelAttributeData.OldValue = 0.f;
+		StatMaxLevelAttributeData.NewValue = InASC->GetGameplayAttributeValue(StatInstance.StatDef->MaxValueAttribute, bFound);
+		StatMaxLevelAttributeData.Attribute = StatInstance.StatDef->MaxValueAttribute;
+		HandleMaxStatLevelAttributeChanged(StatMaxLevelAttributeData);
+	}
+}
+
+void UPBStatComponent::UninitializeFromAbilitySystem()
+{
+	UE_LOGFMT(LogPBStats, Warning, "Unitting ASC. TODO remove abilities here");
+
+	RemoveAllStatInstances();
+
+	LinkedASC = nullptr;
+}
+
 int UPBStatComponent::GetStatLevelForStatDef(UPBStatDefinition* StatDef)
 {
 	if(LinkedASC)
@@ -416,6 +445,8 @@ int UPBStatComponent::GetStatLevelForStatDef(UPBStatDefinition* StatDef)
 		bool bFound;
 		return LinkedASC->GetGameplayAttributeValue(StatDef->CurrentValueAttribute, bFound);
 	}
+
+	UE_LOGFMT(LogPBStats, Error, "GetStatLevel: ASC invalid");
 
 	return 0;
 }
@@ -425,8 +456,10 @@ int UPBStatComponent::GetMaxStatLevelForStatDef(UPBStatDefinition* StatDef)
 	if (LinkedASC)
 	{
 		bool bFound;
-		return LinkedASC->GetGameplayAttributeValue(StatDef->CurrentValueAttribute, bFound);
+		return LinkedASC->GetGameplayAttributeValue(StatDef->MaxValueAttribute, bFound);
 	}
+
+	UE_LOGFMT(LogPBStats, Error, "GetMaxStatLevel: ASC invalid");
 
 	return 0;
 }
@@ -454,6 +487,8 @@ void UPBStatComponent::Server_TryPowerChange_Implementation(UPBStatDefinition* S
 		bWasSuccessful = true;
 	}
 
+	UE_LOGFMT(LogPBStats, Warning, "SERVER: Power change request was successful: {0}", bWasSuccessful);
+
 	Client_ConfirmPowerChange(bWasSuccessful);
 }
 
@@ -475,6 +510,8 @@ void UPBStatComponent::Server_TryCartCheckout_Implementation(const TArray<FPBSta
 		}
 	}
 
+	UE_LOGFMT(LogPBStats, Warning, "SERVER: Checking out Cart was successful: {0}", bWasSuccessful);
+
 	//Need to call first so that listen server can broadcast changes
 	Client_ConfirmCartCheckout(bWasSuccessful);
 
@@ -492,12 +529,14 @@ int UPBStatComponent::GetCartCost()
 {
 	int Total = 0;
 
+	FPBStatLevelEntry Entry;
+
 	for (const FPBStatLevel& StatLevel : Cart)
 	{
 		//This should never be an invalid access because it's already checked but we can validate it anyway
-		if(StatLevel.StatDef->StatEntries.IsValidIndex(StatLevel.Level))
+		if(StatLevel.StatDef->GetStatEntryForLevel(StatLevel.Level, Entry))
 		{
-			Total += StatLevel.StatDef->StatEntries[StatLevel.Level].Cost;
+			Total += Entry.Cost;
 		}
 	}
 
@@ -514,11 +553,15 @@ int UPBStatComponent::GetStatInstanceIndex(UPBStatDefinition* StatDef)
 		}
 	}
 
+	UE_LOGFMT(LogPBStats, Error, "Could not find StatInstance for StatDef: {0}", StatDef->StatName.ToString());
+
 	return -1;
 }
 
 FPBStatGrantedHandles UPBStatComponent::GrantStatAbilitySet(UPBStatDefinition* StatDef, int StatLevel) //TODO
 {
+	UE_LOGFMT(LogPBStats, Warning, "Granting ability set for stat def: {0} at level {1}", StatDef->StatName.ToString(), StatLevel);
+
 	FPBStatGrantedHandles OutHandles;
 
 	ALyraCharacter* LyraChar = Cast<ALyraCharacter>(GetOwner());
@@ -527,9 +570,11 @@ FPBStatGrantedHandles UPBStatComponent::GrantStatAbilitySet(UPBStatDefinition* S
 
 	if(LyraASC)
 	{
-		if (StatDef->StatEntries.IsValidIndex(StatLevel))
+		FPBStatLevelEntry Entry;
+
+		if (StatDef->GetStatEntryForLevel(StatLevel, Entry))
 		{
-			for (auto AbilitySet : StatDef->StatEntries[StatLevel].AbilitySetsToGrant)
+			for (auto AbilitySet : Entry.AbilitySetsToGrant)
 			{
 				AbilitySet->GiveToAbilitySystem(LyraASC, &OutHandles.GrantedAbilitySetHandles);
 			}
@@ -539,8 +584,11 @@ FPBStatGrantedHandles UPBStatComponent::GrantStatAbilitySet(UPBStatDefinition* S
 	return OutHandles;
 }
 
-void UPBStatComponent::RemoveStatAbilitySet(int InstanceIndex, int StatLevel) //TODO
+void UPBStatComponent::RemoveStatAbilitySet(int InstanceIndex, int StatLevel)
 {
+	UE_LOGFMT(LogPBStats, Warning, "Removing ability set for stat instance: {0} at level {1}", StatInstances[InstanceIndex].StatDef->StatName.ToString(), StatLevel);
+
+
 	if(InstanceIndex < 0)
 	{
 		return;
@@ -570,6 +618,8 @@ void UPBStatComponent::GrantInitialStatsAsset()
 {
 	if (GetOwnerRole() == ROLE_Authority)
 	{
+		UE_LOGFMT(LogPBStats, Warning, "Granting initial stats");
+
 		GrantInitialStat(InitialStatsAsset->PowerBankStartingStats);
 
 		for (const FPBInitialStat& InitialStat : InitialStatsAsset->StartingStatLevels)
@@ -579,8 +629,28 @@ void UPBStatComponent::GrantInitialStatsAsset()
 	}
 }
 
+void UPBStatComponent::RemoveAllStatInstances()
+{
+	UE_LOGFMT(LogPBStats, Warning, "Removing all stat instances");
+
+	for (FPBStatInstance& StatInstance : StatInstances)
+	{
+		StatInstance.StatLevelListener.Reset();
+		StatInstance.MaxStatLevelListener.Reset();
+
+		if (GetOwnerRole() == ROLE_Authority)
+		{
+			RemoveStatInstance(StatInstance);
+		}
+	}
+
+	StatInstances.Empty();
+}
+
 void UPBStatComponent::GrantInitialStat(const FPBInitialStat& InInitialStat)
 {
+	UE_LOGFMT(LogPBStats, Warning, "Granting initial stat: {0} at level {1} with max {2}", InInitialStat.StatDef->StatName.ToString(), InInitialStat.InitialStatLevel, InInitialStat.InitialMaxStatLevel);
+
 	StatInstances.Add(FPBStatInstance(InInitialStat.StatDef));
 
 	for (int i = 0; i < InInitialStat.InitialMaxStatLevel; i++)
@@ -592,6 +662,29 @@ void UPBStatComponent::GrantInitialStat(const FPBInitialStat& InInitialStat)
 	{
 		GrantStatLevelPowerGE(InInitialStat.StatDef);
 	}
+}
+
+void UPBStatComponent::RemoveStatInstance(FPBStatInstance& InStatInstance)
+{
+	UE_LOGFMT(LogPBStats, Warning, "Removing initial stat: {0} at level {1} with max {2}", InStatInstance.StatDef->StatName.ToString());
+
+	for (FPBStatGrantedHandles& StatHandle : InStatInstance.GrantedAbilitySetHandles)
+	{
+		StatHandle.GrantedAbilitySetHandles.TakeFromAbilitySystem(LinkedASC);
+	}
+	InStatInstance.GrantedAbilitySetHandles.Empty();
+
+	for (const FActiveGameplayEffectHandle& GEHandle : InStatInstance.GrantedStatGEs)
+	{
+		LinkedASC->RemoveActiveGameplayEffect(GEHandle);
+	}
+	InStatInstance.GrantedStatGEs.Empty();
+
+	for (const FActiveGameplayEffectHandle& GEHandle : InStatInstance.GrantedMaxStatGEs)
+	{
+		LinkedASC->RemoveActiveGameplayEffect(GEHandle);
+	}
+	InStatInstance.GrantedMaxStatGEs.Empty();
 }
 
 UPBStatDefinition* UPBStatComponent::GetStatDefinitionForAttribute(const FGameplayAttribute& InAttribute) const
@@ -611,6 +704,8 @@ UPBStatDefinition* UPBStatComponent::GetStatDefinitionForAttribute(const FGamepl
 		}
 	}
 
+	UE_LOGFMT(LogPBStats, Error, "Could not find StatDef for Attribute: {0}", InAttribute.GetName());
+
 	return nullptr;
 }
 
@@ -621,10 +716,12 @@ void UPBStatComponent::BroadcastStatAttributeChangeMessage(const FGameplayAttrib
 
 void UPBStatComponent::BroadcastStatAttributeChangeMessage(UPBStatDefinition* InStatDef) const
 {
-	FPBStatAttributeChangedMessage Message;
+	UE_LOGFMT(LogPBStats, Warning, "Broadcasting change for statdef: {0}", InStatDef->StatName.ToString());
+
+	FPBStatDefChangedMessage Message;
 	Message.StatComponent = this;
 	Message.StatDef = InStatDef;
 
 	UGameplayMessageSubsystem& MessageSystem = UGameplayMessageSubsystem::Get(this);
-	MessageSystem.BroadcastMessage(TAG_Stats_Attribute_Changed, Message);
+	MessageSystem.BroadcastMessage(TAG_Stats_StatDef_Changed, Message);
 }

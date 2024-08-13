@@ -52,6 +52,10 @@ public:
 	{
 	}
 
+	//This function expects a level to start at 1.
+	UFUNCTION(BlueprintCallable, Category = Stats)
+	bool GetStatEntryForLevel(int Level, FPBStatLevelEntry& OutEntry);
+
 	/** User-visible name */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Stats)
 	FText StatName;
@@ -76,8 +80,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Stats)
 	TSubclassOf<UGameplayEffect> MaxStatLevelGE;
 
+protected:
 	/** Stat Entries */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Stats)
+	UPROPERTY(EditDefaultsOnly, Category = Stats)
 	TArray<FPBStatLevelEntry> StatEntries;
 
 private:

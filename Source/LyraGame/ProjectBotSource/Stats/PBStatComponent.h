@@ -17,8 +17,6 @@ class UPBInventoryComponent;
 struct FPBInventoryList;
 class UPBInventoryItemInstance;
 
-//UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_Inventory_Item_Count, "ItemStatTags.Inventory.UseItem.Count");
-
 USTRUCT(BlueprintType)
 struct LYRAGAME_API FPBStatLevel
 {
@@ -105,7 +103,7 @@ public:
 };
 
 USTRUCT(BlueprintType)
-struct FPBStatAttributeChangedMessage
+struct FPBStatDefChangedMessage
 {
 	GENERATED_BODY()
 
@@ -116,7 +114,7 @@ struct FPBStatAttributeChangedMessage
 	TObjectPtr<UPBStatDefinition> StatDef;
 };
 
-UCLASS(BlueprintType)
+UCLASS(Blueprintable, BlueprintType, Meta = (BlueprintSpawnableComponent))
 class LYRAGAME_API UPBStatComponent : public UActorComponent
 {
 	GENERATED_BODY()
@@ -157,7 +155,7 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Stats|Cart")
 	int GetCartCost();
 
-	UFUNCTION(BlueprintCallable,Category = "Stats|Network")
+	UFUNCTION(BlueprintCallable, BlueprintPure , Category = "Stats|Network")
 	bool GetIsPendingServerConfirmation();
 
 	UFUNCTION(BlueprintCallable, Category = "Stats|Cart")
@@ -177,6 +175,14 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Stats|Button")
 	int GetCartCountForStatDefinition(UPBStatDefinition* StatDef);
+
+	// Initialize the component using an ability system component.
+	UFUNCTION(BlueprintCallable, Category = "Stats|ASC")
+	void InitializeWithAbilitySystem(ULyraAbilitySystemComponent* InASC);
+
+	// Uninitialize the component, clearing any references to the ability system. And removing abilities
+	UFUNCTION(BlueprintCallable, Category = "Stats|ASC")
+	void UninitializeFromAbilitySystem();
 
 protected:
 
@@ -210,12 +216,6 @@ protected:
 
 	///////////////////////////////////////////////////////
 
-	//Linking ASC TODO not hooked up anywhere yet
-
-	void LinkASC(UAbilitySystemComponent* InASC);
-
-	void UnLinkASC();
-
 
 	//TODO This is where we broadcast
 	virtual void HandleStatLevelAttributeChanged(const FOnAttributeChangeData& Data);
@@ -236,7 +236,11 @@ protected:
 
 	void GrantInitialStatsAsset();
 
+	void RemoveAllStatInstances();
+
 	void GrantInitialStat(const FPBInitialStat& InInitialStat);
+
+	void RemoveStatInstance(FPBStatInstance& InStatInstance);
 
 	UPBStatDefinition* GetStatDefinitionForAttribute(const FGameplayAttribute& InAttribute) const;
 
@@ -253,7 +257,7 @@ protected:
 	TArray<FPBStatLevel> Cart;
 
 	UPROPERTY()
-	UAbilitySystemComponent* LinkedASC;
+	ULyraAbilitySystemComponent* LinkedASC;
 
 	//This is what holds the listeners and handles for each active stat
 	UPROPERTY()

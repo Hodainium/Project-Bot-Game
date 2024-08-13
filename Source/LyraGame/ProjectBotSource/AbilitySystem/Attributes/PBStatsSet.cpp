@@ -10,7 +10,7 @@
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(PBStatsSet)
 
-UPBStatsSet::UPBStatsSet() : Strength(1.0f), MaxStrength(3.0f), PowerBank(10.f), MaxPowerBank(10.f)
+UPBStatsSet::UPBStatsSet() : Strength(0.f), MaxStrength(0.f), PowerBank(0.f), MaxPowerBank(0.f)
 {
 }
 
