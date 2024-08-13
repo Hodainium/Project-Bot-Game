@@ -279,7 +279,7 @@ bool UPBStatComponent::IsPowerRequestValid(UPBStatDefinition* StatDef, int Power
 
 	bool bValidBounds = (NewLevel <= CurrentMaxLevel) && (NewLevel >= 0);
 
-	bool bMeetsCost = GetPowerBankLevel() > 0;
+	bool bMeetsCost = GetPowerBankLevel() > 0 || PowerChangeAmount < 0 || StatDef == InitialStatsAsset->PowerBankStartingStats.StatDef;
 
 	return bValidBounds && bMeetsCost;
 }
@@ -516,6 +516,11 @@ void UPBStatComponent::Server_TryCartCheckout_Implementation(const TArray<FPBSta
 		{
 			if(IsCartEntryValid(StatLevel))
 			{
+				if (StatLevel.StatDef == InitialStatsAsset->PowerBankStartingStats.StatDef)
+				{
+					GrantStatLevelPowerGE(StatLevel.StatDef);
+				}
+
 				GrantStatMaxLevelPowerGE(StatLevel.StatDef);
 				bWasSuccessful = true;
 			}
@@ -672,7 +677,10 @@ void UPBStatComponent::GrantInitialStat(const FPBInitialStat& InInitialStat)
 
 	for (int i = 0; i < InInitialStat.InitialStatLevel; i++)
 	{
-		GrantStatLevelPowerGE(InInitialStat.StatDef);
+		if(IsPowerRequestValid(InInitialStat.StatDef, 1))
+		{
+			GrantStatLevelPowerGE(InInitialStat.StatDef);
+		}
 	}
 }
 
