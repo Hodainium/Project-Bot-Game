@@ -76,7 +76,7 @@ bool UPBStatComponent::RequestStatPowerUp(UPBStatDefinition* StatDef)
 {
 	if(IsPowerRequestValid(StatDef, 1))
 	{
-		UE_LOGFMT(LogPBStats, Warning, "CLIENT: RequestPowerDown for StatDef: {0}. Pending Set to true", StatDef->StatName.ToString());
+		UE_LOGFMT(LogPBStats, Warning, "CLIENT: RequestPowerUp for StatDef: {0}. Pending Set to true", StatDef->StatName.ToString());
 
 		IsPendingServerConfirmation = true;
 
@@ -168,7 +168,7 @@ void UPBStatComponent::RemoveStatLevelPowerGE(UPBStatDefinition* StatDef)
 		{
 			int LastIndex = StatInstances[StatIndex].GrantedStatGEs.Num() - 1;
 
-			LinkedASC->RemoveActiveGameplayEffect(StatInstances[StatIndex].GrantedStatGEs[LastIndex]);
+			LinkedASC->RemoveActiveGameplayEffect(StatInstances[StatIndex].GrantedStatGEs[LastIndex], 1);
 
 			StatInstances[StatIndex].GrantedStatGEs.RemoveAt(LastIndex);
 		}
@@ -192,7 +192,7 @@ void UPBStatComponent::RemoveStatMaxLevelPowerGE(UPBStatDefinition* StatDef)
 		{
 			int LastIndex = StatInstances[StatIndex].GrantedMaxStatGEs.Num() - 1;
 
-			LinkedASC->RemoveActiveGameplayEffect(StatInstances[StatIndex].GrantedMaxStatGEs[LastIndex]);
+			LinkedASC->RemoveActiveGameplayEffect(StatInstances[StatIndex].GrantedMaxStatGEs[LastIndex], 1);
 
 			StatInstances[StatIndex].GrantedMaxStatGEs.RemoveAt(LastIndex);
 		}
@@ -293,12 +293,12 @@ bool UPBStatComponent::IsMaxPowerRequestValid(UPBStatDefinition* StatDef, int Po
 
 bool UPBStatComponent::IsCartEntryValid(const FPBStatLevel& CartEntry)
 {
-	return CartEntry.StatDef->MaxLevel >= CartEntry.Level;
+	return CartEntry.StatDef->MaxLevel >= CartEntry.Level && CartEntry.Level != GetMaxStatLevelForStatDef(CartEntry.StatDef);
 }
 
 bool UPBStatComponent::TryAddToCart(FPBStatLevel CartEntry)
 {
-	if(CheckCartCost(CartEntry.GetCost()) && IsCartEntryValid(CartEntry))
+	if(CheckCartCost(CartEntry.GetCost()) && IsCartEntryValid(CartEntry) && !Cart.Contains(CartEntry))
 	{
 		Cart.Add(CartEntry);
 		UE_LOGFMT(LogPBStats, Warning, "AddedToCart: Stat {0}, Level {1}", CartEntry.StatDef->StatName.ToString(), CartEntry.Level);
@@ -320,9 +320,12 @@ void UPBStatComponent::RemoveFromCart(FPBStatLevel CartEntry)
 
 void UPBStatComponent::RequestCartCheckout()
 {
-	IsPendingServerConfirmation = true;
+	if(!Cart.IsEmpty())
+	{
+		IsPendingServerConfirmation = true;
 
-	Server_TryCartCheckout(Cart);
+		Server_TryCartCheckout(Cart);
+	}
 }
 
 void UPBStatComponent::EmptyCart()
@@ -367,6 +370,16 @@ bool UPBStatComponent::GetHighestCartEntryForStatDef(UPBStatDefinition* StatDef,
 	}
 
 	return bFound;
+}
+
+FPBStatLevel UPBStatComponent::CreateNextHighestCartEntryForStatDef(UPBStatDefinition* StatDef)
+{
+	FPBStatLevel OutEntry;
+
+	OutEntry.StatDef = StatDef;
+	OutEntry.Level = GetMaxStatLevelForStatDef(StatDef) + 1 + GetCartCountForStatDefinition(StatDef);
+
+	return OutEntry;
 }
 
 void UPBStatComponent::Client_ConfirmPowerChange_Implementation(bool bSuccessful)
@@ -499,13 +512,12 @@ void UPBStatComponent::Server_TryCartCheckout_Implementation(const TArray<FPBSta
 
 	if(CheckCartCost())
 	{
-		bWasSuccessful = true;
-
 		for (const FPBStatLevel& StatLevel : InCart)
 		{
 			if(IsCartEntryValid(StatLevel))
 			{
 				GrantStatMaxLevelPowerGE(StatLevel.StatDef);
+				bWasSuccessful = true;
 			}
 		}
 	}
@@ -676,13 +688,13 @@ void UPBStatComponent::RemoveStatInstance(FPBStatInstance& InStatInstance)
 
 	for (const FActiveGameplayEffectHandle& GEHandle : InStatInstance.GrantedStatGEs)
 	{
-		LinkedASC->RemoveActiveGameplayEffect(GEHandle);
+		LinkedASC->RemoveActiveGameplayEffect(GEHandle, 1);
 	}
 	InStatInstance.GrantedStatGEs.Empty();
 
 	for (const FActiveGameplayEffectHandle& GEHandle : InStatInstance.GrantedMaxStatGEs)
 	{
-		LinkedASC->RemoveActiveGameplayEffect(GEHandle);
+		LinkedASC->RemoveActiveGameplayEffect(GEHandle, 1);
 	}
 	InStatInstance.GrantedMaxStatGEs.Empty();
 }

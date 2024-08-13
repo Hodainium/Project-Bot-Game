@@ -161,6 +161,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Stats|Cart")
 	bool GetHighestCartEntryForStatDef(UPBStatDefinition* StatDef, FPBStatLevel& CartEntry);
 
+	UFUNCTION(BlueprintCallable, Category = "Stats|Cart")
+	FPBStatLevel CreateNextHighestCartEntryForStatDef(UPBStatDefinition* StatDef);
+
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Stats|Stats")
 	int GetStatLevelForStatDef(UPBStatDefinition* StatDef);
 
