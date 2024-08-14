@@ -8,6 +8,7 @@
 #include "UObject/NoExportTypes.h"
 #include "PBStartingStatsAsset.generated.h"
 
+class UPBItemDefinition;
 class UPBStatDefinition;
 class UGameplayEffect;
 class ULyraAbilitySet;
@@ -63,6 +64,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Stats)
 	FPBInitialStat PowerBankStartingStats;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Stats)
+	TObjectPtr<UPBItemDefinition> CostItem;
 
 private:
 

@@ -303,6 +303,7 @@ bool UPBStatComponent::TryAddToCart(FPBStatLevel CartEntry)
 		Cart.Add(CartEntry);
 		UE_LOGFMT(LogPBStats, Warning, "AddedToCart: Stat {0}, Level {1}", CartEntry.StatDef->StatName.ToString(), CartEntry.Level);
 		BroadcastStatAttributeChangeMessage(CartEntry.StatDef);
+		OnCartDataChanged.Broadcast();
 		return true;
 	}
 
@@ -316,16 +317,22 @@ void UPBStatComponent::RemoveFromCart(FPBStatLevel CartEntry)
 	UE_LOGFMT(LogPBStats, Warning, "RemoveFromCart: Removed {0}", AmountRemoved);
 
 	BroadcastStatAttributeChangeMessage(CartEntry.StatDef);
+	OnCartDataChanged.Broadcast();
+
 }
 
-void UPBStatComponent::RequestCartCheckout()
+bool UPBStatComponent::RequestCartCheckout()
 {
 	if(!Cart.IsEmpty())
 	{
 		IsPendingServerConfirmation = true;
 
 		Server_TryCartCheckout(Cart);
+
+		return true;
 	}
+
+	return false;
 }
 
 void UPBStatComponent::EmptyCart()
@@ -346,6 +353,8 @@ void UPBStatComponent::EmptyCart()
 			BroadcastStatAttributeChangeMessage(StatDef);
 		}
 	}
+
+	OnCartDataChanged.Broadcast();
 }
 
 bool UPBStatComponent::GetIsPendingServerConfirmation()
@@ -512,6 +521,8 @@ void UPBStatComponent::Server_TryCartCheckout_Implementation(const TArray<FPBSta
 
 	if(CheckCartCost())
 	{
+		SpendCartCost(GetCartCost());
+
 		for (const FPBStatLevel& StatLevel : InCart)
 		{
 			if(IsCartEntryValid(StatLevel))
@@ -539,7 +550,31 @@ bool UPBStatComponent::CheckCartCost(int CostToAdd)
 {
 	int TotalCost = GetCartCost() + CostToAdd;
 
-	return true;
+	if(UPBInventoryComponent* InventoryComp = GetInventoryComponentFromOwner())
+	{
+		if(InventoryComp->GetTotalItemCountByDefinition(InitialStatsAsset->CostItem) >= TotalCost)
+		{
+			return true;
+		}
+
+		UE_LOGFMT(LogPBStats, Error, "CheckCartCost. Not enough money! {0}", InventoryComp->GetTotalItemCountByDefinition(InitialStatsAsset->CostItem));
+	}
+
+	UE_LOGFMT(LogPBStats, Error, "CheckCartCost. InvComp Invalid!");
+
+
+	return false;
+}
+
+bool UPBStatComponent::SpendCartCost(int CostToSpend)
+{
+	if (UPBInventoryComponent* InventoryComp = GetInventoryComponentFromOwner())
+	{
+		InventoryComp->ConsumeItemsByDefinition(InitialStatsAsset->CostItem, CostToSpend);
+		return true;
+	}
+
+	return false;
 }
 
 int UPBStatComponent::GetCartCost()

@@ -17,6 +17,8 @@ class UPBInventoryComponent;
 struct FPBInventoryList;
 class UPBInventoryItemInstance;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FPBOnCartDataChanged);
+
 USTRUCT(BlueprintType)
 struct LYRAGAME_API FPBStatLevel
 {
@@ -107,10 +109,10 @@ struct FPBStatDefChangedMessage
 {
 	GENERATED_BODY()
 
-	UPROPERTY(BlueprintReadOnly, Category = Inventory)
+	UPROPERTY(BlueprintReadOnly, Category = Stats)
 	TObjectPtr<const UActorComponent> StatComponent = nullptr;
 
-	UPROPERTY(BlueprintReadOnly, Category = Inventory)
+	UPROPERTY(BlueprintReadOnly, Category = Stats)
 	TObjectPtr<UPBStatDefinition> StatDef;
 };
 
@@ -122,6 +124,9 @@ class LYRAGAME_API UPBStatComponent : public UActorComponent
 public:	
 	// Sets default values for this component's properties
 	UPBStatComponent(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+
+	UPROPERTY(BlueprintAssignable)
+	FPBOnCartDataChanged OnCartDataChanged;
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
@@ -147,7 +152,7 @@ public:
 	void RemoveFromCart(FPBStatLevel CartEntry);
 
 	UFUNCTION(BlueprintCallable, Category = "Stats|Cart")
-	void RequestCartCheckout();
+	bool RequestCartCheckout();
 
 	UFUNCTION(BlueprintCallable, Category = "Stats|Cart")
 	void EmptyCart();
@@ -189,19 +194,21 @@ public:
 
 protected:
 
-	UFUNCTION(BlueprintCallable, Server, Reliable, Category = Inventory)
+	UFUNCTION(BlueprintCallable, Server, Reliable, Category = Stats)
 	void Server_TryPowerChange(UPBStatDefinition* StatDef, int PowerChangeAmount);
 
-	UFUNCTION(BlueprintCallable, Client, Reliable, Category = Inventory)
+	UFUNCTION(BlueprintCallable, Client, Reliable, Category = Stats)
 	void Client_ConfirmPowerChange(bool bSuccessful);
 
-	UFUNCTION(BlueprintCallable, Server, Reliable, Category = Inventory)
+	UFUNCTION(BlueprintCallable, Server, Reliable, Category = Stats)
 	void Server_TryCartCheckout(const TArray<FPBStatLevel>& InCart);
 
-	UFUNCTION(BlueprintCallable, Client, Reliable, Category = Inventory)
+	UFUNCTION(BlueprintCallable, Client, Reliable, Category = Stats)
 	void Client_ConfirmCartCheckout(bool bSuccessful);
 
 	bool CheckCartCost(int CostToAdd = 0);
+
+	bool SpendCartCost(int CostToSpend);
 
 	
 

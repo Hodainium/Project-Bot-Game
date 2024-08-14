@@ -292,7 +292,7 @@ UPBInventoryItemInstance* UPBInventoryComponent::FindFirstItemStackByDefinition(
 int32 UPBInventoryComponent::GetTotalItemCountByDefinition(UPBItemDefinition* ItemDef) const
 {
 	int32 TotalCount = 0;
-	UE_LOGFMT(LogPBGame, Warning, "Called check cost69");
+	
 	for (const FPBInventoryEntry& Entry : InventoryList.Entries)
 	{
 		UPBInventoryItemInstance* Instance = Entry.Instance;
@@ -307,7 +307,7 @@ int32 UPBInventoryComponent::GetTotalItemCountByDefinition(UPBItemDefinition* It
 		}
 	}
 	
-		return TotalCount;
+	return TotalCount;
 }
 
 bool UPBInventoryComponent::ConsumeItemsByDefinition(UPBItemDefinition* ItemDef, int32 NumToConsume)
