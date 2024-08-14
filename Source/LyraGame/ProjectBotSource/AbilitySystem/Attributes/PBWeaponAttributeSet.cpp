@@ -9,63 +9,63 @@ void UPBWeaponAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME_CONDITION_NOTIFY(UPBWeaponAttributeSet, WeaponDamage, COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME_CONDITION_NOTIFY(UPBWeaponAttributeSet, WeaponFireRate, COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME_CONDITION_NOTIFY(UPBWeaponAttributeSet, WeaponRange, COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME_CONDITION_NOTIFY(UPBWeaponAttributeSet, WeaponAccuracy, COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME_CONDITION_NOTIFY(UPBWeaponAttributeSet, WeaponReloadSpeed, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UPBWeaponAttributeSet, WeaponDamageMultiplier, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UPBWeaponAttributeSet, WeaponFireRateMultiplier, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UPBWeaponAttributeSet, WeaponRangeMultiplier, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UPBWeaponAttributeSet, WeaponAccuracyMultiplier, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UPBWeaponAttributeSet, WeaponReloadSpeedMultiplier, COND_None, REPNOTIFY_Always);
 }
 
 UPBWeaponAttributeSet::UPBWeaponAttributeSet()
-	: WeaponDamage(0.f)
-	, WeaponFireRate(0.f)
-	, WeaponRange(0.f)
-	, WeaponAccuracy(0.f)
-	, WeaponReloadSpeed(0.f)
+	: WeaponDamageMultiplier(1.f)
+	, WeaponFireRateMultiplier(1.f)
+	, WeaponRangeMultiplier(1.f)
+	, WeaponAccuracyMultiplier(1.f)
+	, WeaponReloadSpeedMultiplier(1.f)
 {
 }
 
-void UPBWeaponAttributeSet::OnRep_WeaponDamage(const FGameplayAttributeData& OldValue)
+void UPBWeaponAttributeSet::OnRep_WeaponDamageMultiplier(const FGameplayAttributeData& OldValue)
 {
-	GAMEPLAYATTRIBUTE_REPNOTIFY(UPBWeaponAttributeSet, WeaponDamage, OldValue);
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UPBWeaponAttributeSet, WeaponDamageMultiplier, OldValue);
 
 	// Call the change callback, but without an instigator
 	// This could be changed to an explicit RPC in the future
-	OnWeaponDamageChanged.Broadcast(nullptr, nullptr, nullptr, GetWeaponDamage() - OldValue.GetCurrentValue(), OldValue.GetCurrentValue(), GetWeaponDamage());
+	OnWeaponDamageChanged.Broadcast(nullptr, nullptr, nullptr, GetWeaponDamageMultiplier() - OldValue.GetCurrentValue(), OldValue.GetCurrentValue(), GetWeaponDamageMultiplier());
 }
 
-void UPBWeaponAttributeSet::OnRep_WeaponFireRate(const FGameplayAttributeData& OldValue)
+void UPBWeaponAttributeSet::OnRep_WeaponFireRateMultiplier(const FGameplayAttributeData& OldValue)
 {
-	GAMEPLAYATTRIBUTE_REPNOTIFY(UPBWeaponAttributeSet, WeaponFireRate, OldValue);
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UPBWeaponAttributeSet, WeaponFireRateMultiplier, OldValue);
 
 	// Call the change callback, but without an instigator
 	// This could be changed to an explicit RPC in the future
-	OnWeaponFireRateChanged.Broadcast(nullptr, nullptr, nullptr, GetWeaponFireRate() - OldValue.GetCurrentValue(), OldValue.GetCurrentValue(), GetWeaponFireRate());
+	OnWeaponFireRateChanged.Broadcast(nullptr, nullptr, nullptr, GetWeaponFireRateMultiplier() - OldValue.GetCurrentValue(), OldValue.GetCurrentValue(), GetWeaponFireRateMultiplier());
 }
 
-void UPBWeaponAttributeSet::OnRep_WeaponRange(const FGameplayAttributeData& OldValue)
+void UPBWeaponAttributeSet::OnRep_WeaponRangeMultiplier(const FGameplayAttributeData& OldValue)
 {
-	GAMEPLAYATTRIBUTE_REPNOTIFY(UPBWeaponAttributeSet, WeaponRange, OldValue);
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UPBWeaponAttributeSet, WeaponRangeMultiplier, OldValue);
 
 	// Call the change callback, but without an instigator
 	// This could be changed to an explicit RPC in the future
-	OnWeaponRangeChanged.Broadcast(nullptr, nullptr, nullptr, GetWeaponRange() - OldValue.GetCurrentValue(), OldValue.GetCurrentValue(), GetWeaponRange());
+	OnWeaponRangeChanged.Broadcast(nullptr, nullptr, nullptr, GetWeaponRangeMultiplier() - OldValue.GetCurrentValue(), OldValue.GetCurrentValue(), GetWeaponRangeMultiplier());
 }
 
-void UPBWeaponAttributeSet::OnRep_WeaponAccuracy(const FGameplayAttributeData& OldValue)
+void UPBWeaponAttributeSet::OnRep_WeaponAccuracyMultiplier(const FGameplayAttributeData& OldValue)
 {
-	GAMEPLAYATTRIBUTE_REPNOTIFY(UPBWeaponAttributeSet, WeaponAccuracy, OldValue);
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UPBWeaponAttributeSet, WeaponAccuracyMultiplier, OldValue);
 
 	// Call the change callback, but without an instigator
 	// This could be changed to an explicit RPC in the future
-	OnWeaponAccuracyChanged.Broadcast(nullptr, nullptr, nullptr, GetWeaponAccuracy() - OldValue.GetCurrentValue(), OldValue.GetCurrentValue(), GetWeaponAccuracy());
+	OnWeaponAccuracyChanged.Broadcast(nullptr, nullptr, nullptr, GetWeaponAccuracyMultiplier() - OldValue.GetCurrentValue(), OldValue.GetCurrentValue(), GetWeaponAccuracyMultiplier());
 }
 
-void UPBWeaponAttributeSet::OnRep_WeaponReloadSpeed(const FGameplayAttributeData& OldValue)
+void UPBWeaponAttributeSet::OnRep_WeaponReloadSpeedMultiplier(const FGameplayAttributeData& OldValue)
 {
-	GAMEPLAYATTRIBUTE_REPNOTIFY(UPBWeaponAttributeSet, WeaponReloadSpeed, OldValue);
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UPBWeaponAttributeSet, WeaponReloadSpeedMultiplier, OldValue);
 
 	// Call the change callback, but without an instigator
 	// This could be changed to an explicit RPC in the future
-	OnWeaponReloadSpeedChanged.Broadcast(nullptr, nullptr, nullptr, GetWeaponReloadSpeed() - OldValue.GetCurrentValue(), OldValue.GetCurrentValue(), GetWeaponReloadSpeed());
+	OnWeaponReloadSpeedChanged.Broadcast(nullptr, nullptr, nullptr, GetWeaponReloadSpeedMultiplier() - OldValue.GetCurrentValue(), OldValue.GetCurrentValue(), GetWeaponReloadSpeedMultiplier());
 }

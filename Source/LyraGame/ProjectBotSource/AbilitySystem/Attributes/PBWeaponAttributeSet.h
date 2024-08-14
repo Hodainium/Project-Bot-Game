@@ -19,15 +19,13 @@ public:
 
 	UPBWeaponAttributeSet();
 
-	ATTRIBUTE_ACCESSORS(UPBWeaponAttributeSet, WeaponDamage);
-	ATTRIBUTE_ACCESSORS(UPBWeaponAttributeSet, WeaponFireRate);
-	ATTRIBUTE_ACCESSORS(UPBWeaponAttributeSet, WeaponRange);
-	ATTRIBUTE_ACCESSORS(UPBWeaponAttributeSet, WeaponAccuracy);
-	ATTRIBUTE_ACCESSORS(UPBWeaponAttributeSet, WeaponReloadSpeed);
+	ATTRIBUTE_ACCESSORS(UPBWeaponAttributeSet, WeaponDamageMultiplier);
+	ATTRIBUTE_ACCESSORS(UPBWeaponAttributeSet, WeaponFireRateMultiplier);
+	ATTRIBUTE_ACCESSORS(UPBWeaponAttributeSet, WeaponRangeMultiplier);
+	ATTRIBUTE_ACCESSORS(UPBWeaponAttributeSet, WeaponAccuracyMultiplier);
+	ATTRIBUTE_ACCESSORS(UPBWeaponAttributeSet, WeaponReloadSpeedMultiplier);
 
-	//ATTRIBUTE_ACCESSORS(UHWeaponAttributeSet, Element);
-
-	// Delegate when WeaponDamage changes, some information may be missing on the client
+	// Delegate when WeaponDamageMultiplier changes, some information may be missing on the client
 	mutable FLyraAttributeEvent OnWeaponDamageChanged;
 
 	// Delegate when FireRate changes
@@ -45,40 +43,40 @@ public:
 protected:
 
 	UFUNCTION()
-	void OnRep_WeaponDamage(const FGameplayAttributeData& OldValue);
+	void OnRep_WeaponDamageMultiplier(const FGameplayAttributeData& OldValue);
 
 	UFUNCTION()
-	void OnRep_WeaponFireRate(const FGameplayAttributeData& OldValue);
+	void OnRep_WeaponFireRateMultiplier(const FGameplayAttributeData& OldValue);
 
 	UFUNCTION()
-	void OnRep_WeaponRange(const FGameplayAttributeData& OldValue);
+	void OnRep_WeaponRangeMultiplier(const FGameplayAttributeData& OldValue);
 
 	UFUNCTION()
-	void OnRep_WeaponAccuracy(const FGameplayAttributeData& OldValue);
+	void OnRep_WeaponAccuracyMultiplier(const FGameplayAttributeData& OldValue);
 
 	UFUNCTION()
-	void OnRep_WeaponReloadSpeed(const FGameplayAttributeData& OldValue);
+	void OnRep_WeaponReloadSpeedMultiplier(const FGameplayAttributeData& OldValue);
 
 
 private:
 
 	// The current damage attribute
-	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_WeaponDamage, Category = "PB|Weapon", Meta = (AllowPrivateAccess = true))
-	FGameplayAttributeData WeaponDamage;
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_WeaponDamageMultiplier, Category = "PB|Weapon", Meta = (AllowPrivateAccess = true))
+	FGameplayAttributeData WeaponDamageMultiplier;
 
 	// The current firerate attribute
-	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_WeaponFireRate, Category = "PB|Weapon", Meta = (AllowPrivateAccess = true))
-	FGameplayAttributeData WeaponFireRate;
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_WeaponFireRateMultiplier, Category = "PB|Weapon", Meta = (AllowPrivateAccess = true))
+	FGameplayAttributeData WeaponFireRateMultiplier;
 
 	// The current range attribute
-	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_WeaponRange, Category = "PB|Weapon", Meta = (AllowPrivateAccess = true))
-	FGameplayAttributeData WeaponRange;
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_WeaponRangeMultiplier, Category = "PB|Weapon", Meta = (AllowPrivateAccess = true))
+	FGameplayAttributeData WeaponRangeMultiplier;
 
 	// The current accuracy attribute
-	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_WeaponAccuracy, Category = "PB|Weapon", Meta = (AllowPrivateAccess = true))
-	FGameplayAttributeData WeaponAccuracy;
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_WeaponAccuracyMultiplier, Category = "PB|Weapon", Meta = (AllowPrivateAccess = true))
+	FGameplayAttributeData WeaponAccuracyMultiplier;
 
 	// The current accuracy attribute
-	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_WeaponReloadSpeed, Category = "PB|Weapon", Meta = (AllowPrivateAccess = true))
-	FGameplayAttributeData WeaponReloadSpeed;
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_WeaponReloadSpeedMultiplier, Category = "PB|Weapon", Meta = (AllowPrivateAccess = true))
+	FGameplayAttributeData WeaponReloadSpeedMultiplier;
 };

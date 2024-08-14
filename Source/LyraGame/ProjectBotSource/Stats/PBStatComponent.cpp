@@ -227,20 +227,23 @@ void UPBStatComponent::HandleStatLevelAttributeChanged(const FOnAttributeChangeD
 
 	if(Data.OldValue < Data.NewValue)
 	{
-		for (int i = Data.OldValue; i < Data.NewValue; i++)
+		for (int i = Data.OldValue + 1; i < Data.NewValue + 1; i++) 
 		{
 			if (!StatInstances[StatIndex].ContainsLevel(i))
 			{
 				//Grant effect
 				FPBStatGrantedHandles Handle = GrantStatAbilitySet(StatInstances[StatIndex].StatDef, i);
+				Handle.StatLevel = i;
 				StatInstances[StatIndex].GrantedAbilitySetHandles.Add(Handle);
 			}
 		}
 	}
 	else
 	{
-		for (int i = Data.NewValue; i < Data.OldValue; i++)
+		for (int i = Data.NewValue + 1; i < Data.OldValue + 1; i++) 
 		{
+			UE_LOGFMT(LogPBStats, Warning, "TEMP: Removing abilityset for attribute {0} at level {1}", Data.Attribute.GetName(), i);
+
 			//Remove effects
 			if (StatInstances[StatIndex].ContainsLevel(i))
 			{
