@@ -7,6 +7,8 @@
 
 #include "PBWeaponInstance.h"
 #include "AbilitySystem/LyraAbilitySourceInterface.h"
+#include "AbilitySystem/LyraAbilitySystemComponent.h"
+#include "ProjectBotSource/AbilitySystem/Attributes/PBWeaponAttributeSet.h"
 
 #include "PBRangedWeaponInstance.generated.h"
 
@@ -47,6 +49,23 @@ public:
 	float GetCalculatedSpreadAngleMultiplier() const
 	{
 		return bHasFirstShotAccuracy ? 0.0f : CurrentSpreadAngleMultiplier;
+	}
+
+	float GetAccuracyStatFactor()
+	{
+		if(ULyraAbilitySystemComponent* ASC = GetASCFromOwningPawn())
+		{
+			bool bFound;
+			float Accuracy = ASC->GetGameplayAttributeValue(UPBWeaponAttributeSet::GetWeaponAccuracyMultiplierAttribute(), bFound);
+
+			if(Accuracy > 0)
+			{
+				return 1.f / Accuracy;
+			}
+
+		}
+
+		return 1.f;
 	}
 
 	bool HasFirstShotAccuracy() const

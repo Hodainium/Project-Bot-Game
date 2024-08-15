@@ -393,7 +393,8 @@ void UPBGameplayAbility_RangedWeapon::TraceBulletsInCartridge(const FPBRangedWea
 	{
 		const float BaseSpreadAngle = WeaponData->GetCalculatedSpreadAngle();
 		const float SpreadAngleMultiplier = WeaponData->GetCalculatedSpreadAngleMultiplier();
-		const float ActualSpreadAngle = BaseSpreadAngle * SpreadAngleMultiplier;
+		const float AccuracyStatFactor = WeaponData->GetAccuracyStatFactor();
+		const float ActualSpreadAngle = BaseSpreadAngle * SpreadAngleMultiplier * AccuracyStatFactor;
 
 		const float HalfSpreadAngleInRadians = FMath::DegreesToRadians(ActualSpreadAngle * 0.5f);
 

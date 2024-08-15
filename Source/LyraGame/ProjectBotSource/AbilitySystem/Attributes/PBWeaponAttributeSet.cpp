@@ -14,6 +14,7 @@ void UPBWeaponAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>
 	DOREPLIFETIME_CONDITION_NOTIFY(UPBWeaponAttributeSet, WeaponRangeMultiplier, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(UPBWeaponAttributeSet, WeaponAccuracyMultiplier, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(UPBWeaponAttributeSet, WeaponReloadSpeedMultiplier, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UPBWeaponAttributeSet, ItemUseSpeedMultiplier, COND_None, REPNOTIFY_Always);
 }
 
 UPBWeaponAttributeSet::UPBWeaponAttributeSet()
@@ -22,6 +23,7 @@ UPBWeaponAttributeSet::UPBWeaponAttributeSet()
 	, WeaponRangeMultiplier(1.f)
 	, WeaponAccuracyMultiplier(1.f)
 	, WeaponReloadSpeedMultiplier(1.f)
+	, ItemUseSpeedMultiplier(1.f)
 {
 }
 
@@ -68,4 +70,11 @@ void UPBWeaponAttributeSet::OnRep_WeaponReloadSpeedMultiplier(const FGameplayAtt
 	// Call the change callback, but without an instigator
 	// This could be changed to an explicit RPC in the future
 	OnWeaponReloadSpeedChanged.Broadcast(nullptr, nullptr, nullptr, GetWeaponReloadSpeedMultiplier() - OldValue.GetCurrentValue(), OldValue.GetCurrentValue(), GetWeaponReloadSpeedMultiplier());
+}
+
+void UPBWeaponAttributeSet::OnRep_ItemUseSpeedMultiplier(const FGameplayAttributeData& OldValue)
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UPBWeaponAttributeSet, ItemUseSpeedMultiplier, OldValue);
+
+	ItemUseSpeedMultiplierChanged.Broadcast(nullptr, nullptr, nullptr, GetWeaponReloadSpeedMultiplier() - OldValue.GetCurrentValue(), OldValue.GetCurrentValue(), GetWeaponReloadSpeedMultiplier());
 }
