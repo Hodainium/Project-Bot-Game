@@ -25,24 +25,7 @@ public:
 	ATTRIBUTE_ACCESSORS(UPBWeaponAttributeSet, WeaponAccuracyMultiplier);
 	ATTRIBUTE_ACCESSORS(UPBWeaponAttributeSet, WeaponReloadSpeedMultiplier);
 	ATTRIBUTE_ACCESSORS(UPBWeaponAttributeSet, ItemUseSpeedMultiplier);
-
-	// Delegate when WeaponDamageMultiplier changes, some information may be missing on the client
-	mutable FLyraAttributeEvent OnWeaponDamageChanged;
-
-	// Delegate when FireRate changes
-	mutable FLyraAttributeEvent OnWeaponFireRateChanged;
-
-	// Delegate when range changes
-	mutable FLyraAttributeEvent OnWeaponRangeChanged;
-
-	// Delegate when accuracy changes, some information may be missing on the client
-	mutable FLyraAttributeEvent OnWeaponAccuracyChanged;
-
-	// Delegate when accuracy changes, some information may be missing on the client
-	mutable FLyraAttributeEvent OnWeaponReloadSpeedChanged;
-
-	// Delegate when accuracy changes, some information may be missing on the client
-	mutable FLyraAttributeEvent ItemUseSpeedMultiplierChanged;
+	ATTRIBUTE_ACCESSORS(UPBWeaponAttributeSet, WeaponSwingSpeedMultiplier);
 
 protected:
 
@@ -63,6 +46,9 @@ protected:
 
 	UFUNCTION()
 	void OnRep_ItemUseSpeedMultiplier(const FGameplayAttributeData& OldValue);
+
+	UFUNCTION()
+	void OnRep_WeaponSwingSpeedMultiplier(const FGameplayAttributeData& OldValue);
 
 
 private:
@@ -90,4 +76,8 @@ private:
 	// The current accuracy attribute
 	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_ItemUseSpeedMultiplier, Category = "PB|Weapon", Meta = (AllowPrivateAccess = true))
 	FGameplayAttributeData ItemUseSpeedMultiplier;
+
+	// The current accuracy attribute
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_WeaponSwingSpeedMultiplier, Category = "PB|Weapon", Meta = (AllowPrivateAccess = true))
+	FGameplayAttributeData WeaponSwingSpeedMultiplier;
 };

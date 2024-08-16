@@ -61,7 +61,10 @@ class LYRAGAME_API UPBItemDefinition : public UPrimaryDataAsset
 public:
 
 	UPBItemDefinition()
-		: ItemQuantity(1), ItemQuantityQualityFactor(1), BaseItemQuality(EPBItemQuality::Quality0), Price(0)
+		: StrengthRequirement(0), DexterityRequirement(0), MarksmanshipRequirement(0), RadianceRequirement(0),
+		  ItemQuantity(1),
+		  ItemQuantityQualityFactor(1),
+		  BaseItemQuality(EPBItemQuality::Quality0), Price(0)
 		  , CanBeStacked(false), MaxStack(1)
 		  , MaxDurability(0)
 		  , Weight(0), MaxLevel(1)
@@ -70,7 +73,19 @@ public:
 		ItemType = EPBItemType::UndefinedType;
 	}
 
-	UPROPERTY(EditDefaultsOnly, Category = Equipment)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Required Stats")
+	int32 StrengthRequirement;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Required Stats")
+	int32 DexterityRequirement;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Required Stats")
+	int32 MarksmanshipRequirement;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Required Stats")
+	int32 RadianceRequirement;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Equipment)
 	TMap<FGameplayTag, int32> InitialItemStats;
 
 	/** Type of this item, set in native parent class */
