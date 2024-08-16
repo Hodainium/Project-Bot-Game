@@ -46,6 +46,7 @@ void FPBInventoryList::PreReplicatedRemove(const TArrayView<int32> RemovedIndice
 	{
 		FPBInventoryEntry& Stack = Entries[Index];
 		BroadcastChangeMessage(Stack, /*OldCount=*/ Stack.StackCount, /*NewCount=*/ 0);
+		Stack.StackCount = 0;
 		BroadcastInventoryItemCountChangedMessage(Stack.Instance->GetItemDefinition());
 		Stack.LastObservedCount = 0;
 	}
@@ -127,7 +128,7 @@ void FPBInventoryList::BroadcastInventoryItemCountChangedMessage(UPBItemDefiniti
 	Message.InventoryOwner = OwnerComponent;
 	Message.ItemDef = InItemDef;
 
-	UE_LOGFMT(LogPBGame, Warning, "Stacks changed! In code");
+	UE_LOGFMT(LogPBGame, Warning, "This is running3 role: {0}. Item: {1}", OwnerComponent->GetOwnerRole(), InItemDef->GetName());
 
 	UGameplayMessageSubsystem& MessageSystem = UGameplayMessageSubsystem::Get(OwnerComponent->GetWorld());
 	MessageSystem.BroadcastMessage(TAG_Inventory_Message_Item_Count, Message);
@@ -174,13 +175,25 @@ UPBInventoryItemInstance* FPBInventoryList::AddEntry(UPBInventoryItemInstance* I
 	/*UE_LOGFMT(LogPBGame, Warning, "Item instance given. Tag stacks: {0}", NewEntry.Instance->StatTags.GetDebugString());
 	UE_LOGFMT(LogPBGame, Warning, "Item instance given. Tag stacks2: {0}", NewEntry.Instance->StatTags.GetDebugString2());*/
 
-	NewEntry.StackCount = 1;
+	NewEntry.StackCount = Instance->GetStackCount();
 
 	BroadcastInventoryItemCountChangedMessage(Instance->GetItemDefinition());
 
 	MarkItemDirty(NewEntry);
 
 	return NewEntry.Instance;
+}
+
+void FPBInventoryList::ChangeEntryStackCount(FPBInventoryEntry* InEntry, int StackCount)
+{
+	UE_LOGFMT(LogPBGame, Warning, "This is running1");
+
+	if(InEntry)
+	{
+		UE_LOGFMT(LogPBGame, Warning, "This is running2");
+		InEntry->StackCount = StackCount;
+		MarkItemDirty(*InEntry);
+	}
 }
 
 UPBInventoryComponent::UPBInventoryComponent(const FObjectInitializer& ObjectInitializer)
@@ -270,7 +283,7 @@ TArray<UPBInventoryItemInstance*> UPBInventoryComponent::GetAllItems() const
 	return InventoryList.GetAllItems();
 }
 
-UPBInventoryItemInstance* UPBInventoryComponent::FindFirstItemStackByDefinition(
+UPBInventoryItemInstance* UPBInventoryComponent::FindFirstItemInstanceByDefinition(
 	UPBItemDefinition* ItemDef) const
 {
 	for (const FPBInventoryEntry& Entry : InventoryList.Entries)
@@ -282,6 +295,24 @@ UPBInventoryItemInstance* UPBInventoryComponent::FindFirstItemStackByDefinition(
 			if (Instance->GetItemDefinition() == ItemDef)
 			{
 				return Instance;
+			}
+		}
+	}
+
+	return nullptr;
+}
+
+FPBInventoryEntry* UPBInventoryComponent::FindFirstItemStackByDefinition(UPBItemDefinition* ItemDef)
+{
+	for (FPBInventoryEntry& Entry : InventoryList.Entries)
+	{
+		UPBInventoryItemInstance* Instance = Entry.Instance;
+
+		if (IsValid(Instance))
+		{
+			if (Instance->GetItemDefinition() == ItemDef)
+			{
+				return &Entry;
 			}
 		}
 	}
@@ -302,7 +333,8 @@ int32 UPBInventoryComponent::GetTotalItemCountByDefinition(UPBItemDefinition* It
 			UE_LOGFMT(LogPBGame, Warning, "Getting total count, item is: {0}", Instance->GetItemDefinition()->ItemName.ToString());
 			if (Instance->GetItemDefinition() == ItemDef) //Instance->GetItemDefinition() == ItemDef
 			{
-				TotalCount += Instance->GetStackCount();
+				//TotalCount += Instance->GetStackCount();
+				TotalCount += Entry.StackCount;
 			}
 		}
 	}
@@ -322,21 +354,22 @@ bool UPBInventoryComponent::ConsumeItemsByDefinition(UPBItemDefinition* ItemDef,
 	int32 TotalConsumed = 0;
 	while (TotalConsumed < NumToConsume)
 	{
-		if (UPBInventoryItemInstance* Instance = UPBInventoryComponent::FindFirstItemStackByDefinition(ItemDef))
+		if (FPBInventoryEntry* Entry = UPBInventoryComponent::FindFirstItemStackByDefinition(ItemDef))
 		{
 			//Do logic here that checks if stacks to remove is greater than current
 
-			int32 CurrentStack = Instance->GetStackCount();
+			int32 CurrentStack = Entry->Instance->GetStackCount();
 
 			if(NumToConsume >= CurrentStack)
 			{
 				TotalConsumed += CurrentStack;
-				RemoveItemInstance(Instance);
+				RemoveItemInstance(Entry->Instance);
 			}
 			else
 			{
 				TotalConsumed += NumToConsume;
-				Instance->RemoveStackCount(NumToConsume);
+				Entry->Instance->RemoveStackCount(NumToConsume);
+				InventoryList.ChangeEntryStackCount(Entry, Entry->Instance->GetStackCount());
 			}
 		}
 		else

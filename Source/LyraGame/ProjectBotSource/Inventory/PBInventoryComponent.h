@@ -117,6 +117,9 @@ public:
 	UPBInventoryItemInstance* AddEntry(UPBItemDefinition* ItemDef, int32 StackCount);
 
 	UPBInventoryItemInstance* AddEntry(UPBInventoryItemInstance* Instance);
+
+	void ChangeEntryStackCount(FPBInventoryEntry* InEntry, int StackCount);
+
 	void RemoveEntry(UPBInventoryItemInstance* Instance);
 
 	bool MarkItemIDDirty(int32 ItemID);
@@ -175,7 +178,9 @@ public:
 	TArray<UPBInventoryItemInstance*> GetAllItems() const;
 
 	UFUNCTION(BlueprintCallable, Category = Inventory, BlueprintPure)
-	UPBInventoryItemInstance* FindFirstItemStackByDefinition(UPBItemDefinition* ItemDef) const;
+	UPBInventoryItemInstance* FindFirstItemInstanceByDefinition(UPBItemDefinition* ItemDef) const;
+
+	FPBInventoryEntry* FindFirstItemStackByDefinition(UPBItemDefinition* ItemDef);
 
 	UFUNCTION(BlueprintCallable, Category = Inventory)
 	int32 GetTotalItemCountByDefinition(UPBItemDefinition* ItemDef) const;

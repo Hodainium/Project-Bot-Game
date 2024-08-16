@@ -68,8 +68,6 @@ UPBStatComponent::UPBStatComponent(const FObjectInitializer& ObjectInitializer)
 void UPBStatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
-	DOREPLIFETIME(ThisClass, StatInstances);
 }
 
 bool UPBStatComponent::RequestStatPowerUp(UPBStatDefinition* StatDef)
@@ -258,10 +256,6 @@ void UPBStatComponent::HandleStatLevelAttributeChanged(const FOnAttributeChangeD
 void UPBStatComponent::HandleMaxStatLevelAttributeChanged(const FOnAttributeChangeData& Data)
 {
 	UE_LOGFMT(LogPBStats, Warning, "Handling max stat level change for attribute {0}. Changed from {1} to {2}", Data.Attribute.GetName(), Data.OldValue, Data.NewValue);
-
-	//Loop through statdefs find and remove abilitysets. This is the only place we should grant and remove abilitysets
-
-	//TODO Do we want to put logic here to remove powerGEs if max lowers? That should never actually happen given our code. So I guess not
 
 	BroadcastStatAttributeChangeMessage(Data.Attribute);
 }
@@ -671,16 +665,13 @@ void UPBStatComponent::RemoveStatAbilitySet(int InstanceIndex, int StatLevel)
 
 void UPBStatComponent::GrantInitialStatsAsset()
 {
-	if (GetOwnerRole() == ROLE_Authority)
+	UE_LOGFMT(LogPBStats, Warning, "Granting initial stats");
+
+	GrantInitialStat(InitialStatsAsset->PowerBankStartingStats);
+
+	for (const FPBInitialStat& InitialStat : InitialStatsAsset->StartingStatLevels)
 	{
-		UE_LOGFMT(LogPBStats, Warning, "Granting initial stats");
-
-		GrantInitialStat(InitialStatsAsset->PowerBankStartingStats);
-
-		for (const FPBInitialStat& InitialStat : InitialStatsAsset->StartingStatLevels)
-		{
-			GrantInitialStat(InitialStat);
-		}
+		GrantInitialStat(InitialStat);
 	}
 }
 
@@ -708,16 +699,19 @@ void UPBStatComponent::GrantInitialStat(const FPBInitialStat& InInitialStat)
 
 	StatInstances.Add(FPBStatInstance(InInitialStat.StatDef));
 
-	for (int i = 0; i < InInitialStat.InitialMaxStatLevel; i++)
+	if (GetOwnerRole() == ROLE_Authority)
 	{
-		GrantStatMaxLevelPowerGE(InInitialStat.StatDef);
-	}
-
-	for (int i = 0; i < InInitialStat.InitialStatLevel; i++)
-	{
-		if(IsPowerRequestValid(InInitialStat.StatDef, 1))
+		for (int i = 0; i < InInitialStat.InitialMaxStatLevel; i++)
 		{
-			GrantStatLevelPowerGE(InInitialStat.StatDef);
+			GrantStatMaxLevelPowerGE(InInitialStat.StatDef);
+		}
+
+		for (int i = 0; i < InInitialStat.InitialStatLevel; i++)
+		{
+			if (IsPowerRequestValid(InInitialStat.StatDef, 1))
+			{
+				GrantStatLevelPowerGE(InInitialStat.StatDef);
+			}
 		}
 	}
 }

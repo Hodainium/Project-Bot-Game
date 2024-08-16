@@ -37,6 +37,7 @@ void UPBInventoryItemInstance::GetLifetimeReplicatedProps(TArray<FLifetimeProper
 	DOREPLIFETIME(ThisClass, ItemQuality);
 	DOREPLIFETIME(ThisClass, ItemMods);
 	DOREPLIFETIME(ThisClass, ReplicatedAdjectiveIndexKey);
+	DOREPLIFETIME(ThisClass, ItemStackCount);
 }
 
 void UPBInventoryItemInstance::SetStackCount(int32 StackCount)
