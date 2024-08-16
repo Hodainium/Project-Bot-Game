@@ -351,6 +351,7 @@ void ALyraCharacter::OnDeathStarted(AActor*)
 
 void ALyraCharacter::OnDeathFinished(AActor*)
 {
+	StatsComponent->UninitializeFromAbilitySystem();
 	GetWorld()->GetTimerManager().SetTimerForNextTick(this, &ThisClass::DestroyDueToDeath);
 }
 

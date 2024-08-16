@@ -718,7 +718,7 @@ void UPBStatComponent::GrantInitialStat(const FPBInitialStat& InInitialStat)
 
 void UPBStatComponent::RemoveStatInstance(FPBStatInstance& InStatInstance)
 {
-	UE_LOGFMT(LogPBStats, Warning, "Removing initial stat: {0} at level {1} with max {2}", InStatInstance.StatDef->StatName.ToString());
+	UE_LOGFMT(LogPBStats, Warning, "Removing initial stat: {0}", InStatInstance.StatDef->StatName.ToString());
 
 	for (FPBStatGrantedHandles& StatHandle : InStatInstance.GrantedAbilitySetHandles)
 	{
