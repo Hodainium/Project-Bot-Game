@@ -1,17 +1,4 @@
-Lyra Sample Game
-===
+This is my multiplayer dark souls game made in Unreal Engine 5 using the the Project Lyra demo sample provided by Epic Games as a base.
 
-Content Information
-----
-When downloading Lyra Source code from git, the content folders are not included.
-
-To make use of the Lyra source code, you will need to download the content from the Unreal Marketplace through the Epic Games Launcher.
-
-For more information please visit the [Unreal Engine Lyra documentation](https://docs.unrealengine.com/5.0/en-US/lyra-sample-game-in-unreal-engine/)
-
-Once installed, simply copy the content folder inside your solution directory and you should be good to go.
-
-
-Additional Information
-----
-See the [Unreal Engine README](../../../README.md) at the root of the repository for [Licensing](../../../README.md#licensing) and [Contributing](../../../README.md#contributions) information.
+Here's a short video showcasing the features of this project:
+https://youtu.be/iAdvbT5Npcw
