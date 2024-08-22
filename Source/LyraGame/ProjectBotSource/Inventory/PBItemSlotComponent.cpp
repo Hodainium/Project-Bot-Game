@@ -39,13 +39,6 @@ void UPBItemSlotComponent::BeginPlay()
 		SetNumSlotsForEnum(EPBInventorySlotType::Temporary, TemporaryStartingSlots);
 		SetNumSlotsForEnum(EPBInventorySlotType::UseItem, UseItemStartingSlots);
 		SetNumSlotsForEnum(EPBInventorySlotType::Consumable, ConsumableStartingSlots);
-
-
-		SetActiveSlotIndexForEnum(EPBInventorySlotType::Weapon_L, -1);
-		SetActiveSlotIndexForEnum(EPBInventorySlotType::Weapon_R, -1);
-		SetActiveSlotIndexForEnum(EPBInventorySlotType::Temporary, -1);
-		SetActiveSlotIndexForEnum(EPBInventorySlotType::UseItem, -1);
-		SetActiveSlotIndexForEnum(EPBInventorySlotType::Consumable, -1);
 	}
 }
 
@@ -478,7 +471,7 @@ void UPBItemSlotComponent::EquipItemInSlot(EPBInventorySlotType SlotType)
 		}
 		default:
 		{
-			UE_LOG(LogPBGame, Error, TEXT("ITEMSLOTCOMP::BrUPB you didn't include equipItemInSlot logic. For item: %s"), *SlotItem->GetItemDefinition()->ItemName.ToString());
+			UE_LOG(LogPBGame, Error, TEXT("ITEMSLOTCOMP::EquipItemInSlot logic not implemented. For item: %s"), *SlotItem->GetItemDefinition()->ItemName.ToString());
 		}
 		}
 	}
@@ -636,7 +629,7 @@ void UPBItemSlotComponent::Handle_OnRep_NumSlotsChanged(EPBInventorySlotType Slo
 	Message.NumSlots = GetSlotStructForEnum_Const(SlotType).NumSlots;
 	Message.SlotType = SlotType;
 
-	UE_LOGFMT(LogPBGame, Error, "Sending numslots message: {typ}", Message.NumSlots);
+	UE_LOGFMT(LogPBGame, Warning, "Handle_OnRep_NumSlotsChanged");
 
 	UGameplayMessageSubsystem& MessageSystem = UGameplayMessageSubsystem::Get(this);
 	MessageSystem.BroadcastMessage(PB_ItemSlots_Tags::TAG_ITEMSLOTS_MESSAGE_NUMSLOTSCHANGED, Message);
@@ -648,6 +641,8 @@ void UPBItemSlotComponent::Handle_OnRep_ActiveSlotIndexChanged(EPBInventorySlotT
 	Message.Owner = GetOwner();
 	Message.ActiveIndex = GetSlotStructForEnum_Const(SlotType).ActiveSlotIndex;
 	Message.SlotType = SlotType;
+
+	UE_LOGFMT(LogPBGame, Warning, "Handle_OnRep_ActiveSlotChanged");
 
 	UGameplayMessageSubsystem& MessageSystem = UGameplayMessageSubsystem::Get(this);
 	MessageSystem.BroadcastMessage(PB_ItemSlots_Tags::TAG_ITEMSLOTS_MESSAGE_ACTIVEINDEXCHANGED, Message);

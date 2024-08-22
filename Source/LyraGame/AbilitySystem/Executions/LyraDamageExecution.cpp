@@ -6,6 +6,7 @@
 #include "AbilitySystem/LyraGameplayEffectContext.h"
 #include "AbilitySystem/LyraAbilitySourceInterface.h"
 #include "Engine/World.h"
+#include "ProjectBotSource/Tags/PB_Tags.h"
 #include "Teams/LyraTeamSubsystem.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(LyraDamageExecution)
@@ -94,6 +95,11 @@ void ULyraDamageExecution::Execute_Implementation(const FGameplayEffectCustomExe
 		{
 			DamageInteractionAllowedMultiplier = TeamSubsystem->CanCauseDamage(EffectCauser, HitActor) ? 1.0 : 0.0;
 		}
+	}
+
+	if(TargetTags->HasTag(PB_Status_Tags::TAG_DAMAGE_INTANGIBLE))
+	{
+		DamageInteractionAllowedMultiplier = 0.f;
 	}
 
 	// Determine distance
