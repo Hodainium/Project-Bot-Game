@@ -2,7 +2,6 @@
 
 #pragma once
 
-//#include "Engine/Classes/Components/ActorComponent.h"
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "PBInventoryStructs.h"
@@ -290,12 +289,6 @@ protected:
 
 	UPROPERTY()
 	FPBInventorySlotStruct SlotStruct_Invalid;
-
-	/*UPROPERTY(ReplicatedUsing = OnRep_SlotStruct_UseItem)
-	FPBInventorySlotStruct SlotStruct_Core;
-
-	UFUNCTION()
-	void OnRep_SlotStruct_Core(FPBInventorySlotStruct& PreviousValue);*/
 
 	UPROPERTY(Replicated)
 	TArray<FPBNullEquipmentEntry> NullEquipmentStack;

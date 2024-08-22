@@ -350,12 +350,6 @@ void UPBItemSlotComponent::RemoveItemAtSlotIndex(EPBInventorySlotType SlotType, 
 
 	UPBInventoryItemInstance* Result = nullptr;
 
-	//if (Slots.ActiveSlotIndex == SlotIndex)
-	//{
-	//	UnequipItemInSlot(SlotType);
-	//	//Slots.ActiveSlotIndex = -1;
-	//}
-
 	if (Slots.SlotArray.IsValidIndex(SlotIndex))
 	{
 		Result = Slots.SlotArray[SlotIndex];
